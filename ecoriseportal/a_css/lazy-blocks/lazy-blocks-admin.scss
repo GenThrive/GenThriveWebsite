@@ -1,0 +1,46 @@
+@import "../_global-variables.scss";
+@import "../../bootstrap_theme/custom.scss";
+
+.block-editor-writing-flow {
+    @import "../../bootstrap_theme/bootstrap-base.scss";
+    @import "lazy-blocks";
+}
+
+:root {
+    @each $color, $value in $theme-colors {
+        --#{$color}: #{$value};
+    }
+}
+
+.wp-block {
+    max-width: 100%;
+}
+
+.wp-block-wp-bootstrap-blocks-container {
+    margin: 0 auto;
+
+    @include bp(sm) {
+        max-width: 540px;
+    }
+
+    @include bp(md) {
+        max-width: 720px;
+    }
+
+    @include bp(lg) {
+        max-width: 960px;
+    }
+
+    @include bp(xl) {
+        max-width: 1140px;
+    }
+
+    @include bp(xxl) {
+        max-width: 1340px;
+    }
+}
+
+.editor-styles-wrapper p {
+    margin-top: 0px;
+    margin-bottom: 8px !important;
+}

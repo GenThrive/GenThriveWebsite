@@ -1,0 +1,101 @@
+@import "_twoColTextImage";
+@import "_innerBlocks";
+@import "_lazy-buttons";
+
+.tb_gb .gbFullWidth {
+    width: 100vw;
+    position: absolute;
+    height: 100%;
+    margin-left: 50%;
+    transform: translateX(-50vw);
+}
+
+.sectionBreak .wrapper {
+    position: relative;
+}
+
+.border-radius {
+    border-radius: $border-radius;
+}
+
+.border-radius-sm {
+    border-radius: $border-radius-sm;
+}
+
+.border-radius-lg {
+    border-radius: $border-radius-lg;
+}
+
+.markSol {
+    height: 100%;
+}
+
+.markSol > .wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    border-width: 2px !important;
+    border-style: solid;
+}
+
+.markSol .wrapper .innerWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.markSol .wrapper .innerWrapper.flex-lg-row .content,
+.markSol .wrapper .innerWrapper.flex-md-row .content {
+    padding-right: 1rem;
+}
+
+.markSol .wrapper .innerWrapper .icon {
+    svg,
+    img {
+        width: 100%;
+    }
+}
+
+.markSol .wrapper .innerWrapper .icon {
+    min-width: 80px;
+    justify-content: center;
+    align-items: center;
+}
+
+.colorShadowImg img {
+    object-fit: cover;
+    min-height: 300px
+}
+
+.colorShadowImg {
+    padding-bottom: 8px;
+}
+
+.shadColor-primary {
+    box-shadow: -8px 8px $primary;
+}
+
+.shadColor-secondary {
+    box-shadow: -8px 8px $secondary;
+}
+
+.shadColor-tertiary {
+    box-shadow: -8px 8px $tertiary;
+}
+
+.markSol .innerWrapper.flex-row img {
+    max-width: 55px;
+}
+
+.markSol .innerWrapper.flex-row-reverse img {
+    max-width: 55px;
+}
+
+.markSol .innerWrapper.flex-column-reverse img {
+    margin-bottom: 1rem;
+    max-width: 80%;
+}
+
+.markSol .innerWrapper .content {
+    flex-grow: 1;
+}

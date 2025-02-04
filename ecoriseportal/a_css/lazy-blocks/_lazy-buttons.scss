@@ -1,0 +1,41 @@
+@each $color, $value in $theme-colors {
+    #site_content .linkArrow.#{$color} {
+        a {
+            color: #{$value}
+        }
+
+        svg {
+            fill: #{$value}
+        }
+    }
+}
+
+.linkArrow {
+    display: inline-flex;
+    align-items: center;
+    transition: all .3s;
+
+    a {
+        padding-right: .25em;
+        font-weight: bold;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+}
+
+.linkArrow:hover svg,
+.linkArrow:hover>img {
+    transform: translateX(10px)
+}
+
+.linkArrow svg,
+.linkArrow img {
+    transition: all .2s;
+    min-width: 8px;
+}
+
+.jr_guten_btn {
+    padding: 0.5rem 2rem;
+}
