@@ -643,7 +643,7 @@ function delete_old_exported_files_cron(){
 
 }
 
-add_action('init','run_delete_old_exported_files_cron');
+// add_action('init','run_delete_old_exported_files_cron'); // This should only be run via CRON, running on init causes slow website load times
 
 function run_delete_old_exported_files_cron(){
     $request = isset($_REQUEST['cron_job']) ? $_REQUEST['cron_job'] : "";
