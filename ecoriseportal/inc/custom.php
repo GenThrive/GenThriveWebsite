@@ -236,41 +236,44 @@ function string_between_two_string($str, $starting_word = '["', $ending_word = '
 }
 
 // Register Session Variables
-function register_session()
-{
-    if (!session_id()) {
-        session_start();
-    }
-}
-add_action('init', 'register_session');
+// function register_session()
+// {
+//     if (!session_id()) {
+//         session_start();
+//     }
+// }
+// add_action('init', 'register_session');
 
-add_filter('gform_field_input_2_37', 'get_service_provider_id', 10, 5);
-function get_service_provider_id($input, $fields, $value, $lead_id, $form_id)
-{
-    $_SESSION['service_provider_id'] = $value;
-    return $input;
-}
+// add_filter('gform_field_input_2_37', 'get_service_provider_id', 10, 5);
+// function get_service_provider_id($input, $fields, $value, $lead_id, $form_id)
+// {
+//     $_SESSION['service_provider_id'] = $value;
+//     return $input;
+// }
 
-/**
- * 
- * function to display the organization logo dynamically on the org contact info form
- * 
- */
+// /**
+//  * 
+//  * function to display the organization logo dynamically on the org contact info form
+//  * 
+//  */
 
-add_filter('gform_field_input_2_36', 'populate_org_logo', 10, 5);
-function populate_org_logo($input, $field, $value, $lead_id, $form_id){
-    if (isset($_SESSION['service_provider_id'])) {
-        $service_provider_id = $_SESSION['service_provider_id'];
+add_filter('gform_field_content', 'populate_org_logo', 10, 5);
+function populate_org_logo($field_content, $field, $value, $lead_id, $form_id){
+    if ($field->id == 35 && $field->formId == 2) { // **REPLACE WITH YOUR ACTUAL IDs**
+        $service_provider_id = get_the_ID();
         $logo_string = get_post_meta($service_provider_id, 'wpcf-organization_logo', true);
-    } else {
-        $logo_string = ''; 
+
+        if ($logo_string !== "") {
+            $logo_src = string_between_two_string($logo_string, '["', '"]');
+            if ($logo_src) {
+                $image_html = '<div id="logo-preview" style="position: relative;"><small>Current Logo</small><figure><img src="' . $logo_src . '" width="100px" height="100px"/></figure><div><small>Upload a New Logo Below to Replace This Logo</small></div></div>';
+                return $image_html . $field_content; // Prepend the image HTML
+            }
+        }
     }
-    $logo_src = string_between_two_string($logo_string, '["', '"]');
-    if ($logo_src) {
-        $input = '<div id="logo-preview" style="position: relative;"><figure><img src="' . $logo_src . '" width="100px" height="100px"/></figure><img id="remove-preview" style="cursor: pointer; position: absolute;top: 5px;left: 80px;" src="/wp-content/uploads/2022/09/download.png" width="20px" height="20px" /></div>';
-    }
-    return $input;
+    return $field_content;
 }
+
 
 /**
  * 
@@ -284,33 +287,34 @@ function save_file_upload_field($entry, $form)
     //check if logo is being uploaded from the form
     $uploaded_files = json_decode(rgpost("gform_uploaded_files"));
     $is_file_uploaded = !empty($_FILES["input_35"]["name"]) || isset($uploaded_files->input_35);
-    if (metadata_exists('post', $_SESSION['service_provider_id'], 'org_logo_hidden')) {
-        $is_logo_hidden = get_post_meta($_SESSION['service_provider_id'], 'org_logo_hidden', true);
+    $service_provider_id = get_the_ID();
+    if (metadata_exists('post', $service_provider_id, 'org_logo_hidden')) {
+        $is_logo_hidden = get_post_meta($service_provider_id, 'org_logo_hidden', true);
     }
     if ($is_file_uploaded) {
         // do nothing extra
     } else if ($is_logo_hidden && $is_logo_hidden == 'yes' && !$is_file_uploaded) {
         // do nothing extra
     } else if ($entry['38'] && !$is_file_uploaded) {
-        update_post_meta($_SESSION['service_provider_id'], 'wpcf-organization_logo', '["' . $entry['38'] . '"]');
+        update_post_meta($service_provider_id, 'wpcf-organization_logo', '["' . $entry['38'] . '"]');
     }
 }
 
-/**
- * 
- * 
- * function to remove preview field
- * 
- */
-add_action('wp_ajax_remove_logo_preview', 'remove_logo_preview');
-add_action('wp_ajax_nopriv_remove_logo_preview', 'remove_logo_preview');
+// /**
+//  * 
+//  * 
+//  * function to remove preview field
+//  * 
+//  */
+// add_action('wp_ajax_remove_logo_preview', 'remove_logo_preview');
+// add_action('wp_ajax_nopriv_remove_logo_preview', 'remove_logo_preview');
 
-function remove_logo_preview()
-{
-    $res = add_post_meta($_SESSION['service_provider_id'], 'org_logo_hidden', 'yes');
-    echo $res;
-    die();
-}
+// function remove_logo_preview()
+// {
+//     $res = add_post_meta($_SESSION['service_provider_id'], 'org_logo_hidden', 'yes');
+//     echo $res;
+//     die();
+// }
 
 /**
  * 
@@ -645,14 +649,14 @@ function delete_old_exported_files_cron(){
 
 // add_action('init','run_delete_old_exported_files_cron'); // This should only be run via CRON, running on init causes slow website load times
 
-function run_delete_old_exported_files_cron(){
-    $request = isset($_REQUEST['cron_job']) ? $_REQUEST['cron_job'] : "";
-    if($request == "yes"){
-        echo do_action('delete_old_wp_exported_files_hook');
-        exit;
-    }
+// function run_delete_old_exported_files_cron(){
+//     $request = isset($_REQUEST['cron_job']) ? $_REQUEST['cron_job'] : "";
+//     if($request == "yes"){
+//         echo do_action('delete_old_wp_exported_files_hook');
+//         exit;
+//     }
 
-}
+// }
 
 function redirect_sample_page_to_404() {
     if (is_page('sample-page')) { 

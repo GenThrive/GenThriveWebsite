@@ -17,18 +17,18 @@ if (jQuery("#gform_7").length) {
   jQuery("#gf_progressbar_wrapper_7").css("display", "none");
 }
 
-jQuery(document).on("click", "#logo-preview #remove-preview", () => {
-  jQuery("#logo-preview").css("display", "none");
-  jQuery.ajax({
-    url: service_provider_obj.ajax_url,
-    type: "post",
-    data: {
-      action: "remove_logo_preview",
-    },
-    success: function (res) {},
-    error: function () {},
-  });
-});
+// jQuery(document).on("click", "#logo-preview #remove-preview", () => {
+//   jQuery("#logo-preview").css("display", "none");
+//   jQuery.ajax({
+//     url: service_provider_obj.ajax_url,
+//     type: "post",
+//     data: {
+//       action: "remove_logo_preview",
+//     },
+//     success: function (res) {},
+//     error: function () {},
+//   });
+// });
 
 /** code for program archive functionality */
 function trash_button(program_id) {
