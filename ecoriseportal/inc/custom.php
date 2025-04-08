@@ -555,96 +555,171 @@ function notif_indicator_ajax_handler(){
 add_action('wp_ajax_notif_indicator', 'notif_indicator_ajax_handler');
 add_action('wp_ajax_nopriv_notif_indicator', 'notif_indicator_ajax_handler');
 
-// define( 'DISALLOW_FILE_EDIT', true ); define( 'DISALLOW_FILE_MODS', true );
+//define( 'DISALLOW_FILE_EDIT', true ); define( 'DISALLOW_FILE_MODS', true );
+
+/**
+ * Triggers a WP All Import URL with provided export key and ID as individual arguments.
+ *
+ * @param string $export_key The export key.
+ * @param int    $export_id  The export ID.
+ * @param string $action     The action to trigger ('trigger' or 'processing').
+ */
+function trigger_wp_all_import_url_callback_individual_args(string $export_key, int $export_id, string $action = 'trigger') {
+    // $log_file = WP_CONTENT_DIR . '/uploads/wp_all_import_cron_log.txt';
+    // $timestamp = current_time('mysql');
+    // $log_message = "[$timestamp] Cron job triggered with key: " . $export_key . ", ID: " . $export_id . ", Action: " . $action . "\n";
+    // file_put_contents($log_file, $log_message, FILE_APPEND);
+
+    $trigger_url = add_query_arg(
+        array(
+            'export_key' => $export_key,
+            'export_id'  => $export_id,
+            'action'     => $action,
+        ),
+        home_url('wp-load.php')
+    );
+
+    $response = wp_remote_get($trigger_url);
+
+    // if (is_wp_error($response)) {
+    //     $log_message = "[$timestamp] Error triggering WP All Import URL (Export ID: " . $export_id . ", Action: " . $action . "): " . $response->get_error_message() . "\n";
+    //     file_put_contents($log_file, $log_message, FILE_APPEND);
+    // }
+}
+add_action('trigger_wp_all_import_export_hook', 'trigger_wp_all_import_url_callback_individual_args', 10, 3);
+
+/**
+ * Moves WP All Export files to the ABSPATH/wp-exported-files directory with a new filename.
+ *
+ * @param int               $export_id The ID of the export.
+ * @param PMXE_Export_Record $exportObj The export record object.
+ */
+function move_eco_export_file_abspath(int $export_id, $exportObj) {
+    if ($export_id == '127' || $export_id == '128' || $export_id == '129') {
+        // Define the target directory using ABSPATH.
+        $target_dir = ABSPATH . 'wp-exported-files' . DIRECTORY_SEPARATOR;
+
+        // Check if the target directory exists and create it if it doesn't.
+        if (!is_dir($target_dir)) {
+            if (!mkdir($target_dir, 0755, true)) {
+                error_log('Error: Could not create the target directory: ' . $target_dir);
+                return;
+            }
+        }
+
+        // Check whether "Secure Mode" is enabled in All Export > Settings.
+        $is_secure_export = PMXE_Plugin::getInstance()->getOption('secure');
+
+        if (!$is_secure_export) {
+            // Get filepath when 'Secure Mode' is off.
+            $filepath = get_attached_file($exportObj->attch_id);
+        } else {
+            // Get filepath with 'Secure Mode' on.
+            $filepath = wp_all_export_get_absolute_path($exportObj->options['filepath']);
+        }
+
+        // Get the original filename and extension.
+        $original_filename = basename($filepath);
+        $file_extension = pathinfo($original_filename, PATHINFO_EXTENSION);
+
+        // Define the new filename.
+        $new_filename_base = '';
+        switch ($export_id) {
+            case '127':
+                $new_filename_base = 'service_providers';
+                break;
+            case '128':
+                $new_filename_base = 'programs';
+                break;
+            case '129':
+                $new_filename_base = 'partners';
+                break;
+            default:
+                $new_filename_base = 'export-' . $export_id;
+                break;
+        }
+        $new_filename = $new_filename_base . '_' . date('mdY') . '.' . $file_extension;
+
+        // Move export file to the target directory with the new filename.
+        $new_filepath = $target_dir . $new_filename;
+        if (!rename($filepath, $new_filepath)) {
+            error_log('Error: Could not move/rename export file for export ID ' . $export_id . ' from: ' . $filepath . ' to: ' . $new_filepath);
+        }
+    }
+}
+add_action('pmxe_after_export', 'move_eco_export_file_abspath', 10, 2);
+
+//keep it going for longer reports
+function wpae_continue_cron( $export_id, $exportObj ) {
+    $base_url = home_url();
+    // Only run for export ID 12.
+    if ( $export_id == '127' ) {
+
+        // Import 12's 'processing' URL. 
+        $cron_processing_url = $base_url.'wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
+
+        // Redirect the connection to the 'processing' URL.
+        header( "Location: " .  $cron_processing_url . "" );
+    } elseif ( $export_id == '128' ) {
+
+        // Import 12's 'processing' URL. 
+        $cron_processing_url = $base_url.'wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
+
+        // Redirect the connection to the 'processing' URL.
+        header( "Location: " .  $cron_processing_url . "" );
+    } elseif ( $export_id == '129' ) {
+
+        // Import 12's 'processing' URL. 
+        $cron_processing_url = $base_url.'  wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
+
+        // Redirect the connection to the 'processing' URL.
+        header( "Location: " .  $cron_processing_url . "" );
+    }
+}
+add_action( 'pmxe_after_iteration', 'wpae_continue_cron', 10, 2 );
 
 
-//delete /www/genthrive_444/public/wp-exported-files files older than 7 days.
-
-add_action('delete_old_wp_exported_files_hook','delete_old_exported_files_cron');
-function delete_old_exported_files_cron(){
-    $directory = ABSPATH."wp-exported-files";
+/**
+ * Deletes files older than 7 days from the specified directory.
+ */
+add_action('delete_old_wp_exported_files_hook', 'delete_old_exported_files_cron');
+function delete_old_exported_files_cron() {
+    $directory = ABSPATH . 'wp-exported-files' . DIRECTORY_SEPARATOR;
+    $retention_days = 7;
+    $retention_timestamp = time() - ( $retention_days * 24 * 60 * 60 );
 
     if (is_dir($directory)) {
+        $files_to_delete = [];
 
         $files = scandir($directory);
         $files = array_diff($files, array('.', '..'));
-        $fileCreationTimesPartners = array();
-        $fileCreationTimesPrograms = array();
-        $fileCreationTimesService_providers = array();
 
         foreach ($files as $file) {
-            $filePath = $directory . DIRECTORY_SEPARATOR . $file;
-                if (is_file($filePath)) {
+            $filePath = $directory . $file;
+            if (is_file($filePath)) {
+                $modifiedTime = filemtime($filePath); // Use modification time for age check
 
-                    $creationTime = filectime($filePath);
-                    $formattedTime = date("Y-m-d", $creationTime);
-                    
-                    if(str_contains($file,"partners")){
-                        $fileCreationTimesPartners[$file] = $creationTime;
-                    }
-
-                    if(str_contains($file,"programs")){
-                        $fileCreationTimesPrograms[$file] = $creationTime;
-                    }
-
-                    if(str_contains($file,"service_providers")){
-                        $fileCreationTimesService_providers[$file] = $creationTime;
-                    }
-                }
-        }
-
-        arsort($fileCreationTimesPartners);
-        arsort($fileCreationTimesPrograms);
-        arsort($fileCreationTimesService_providers);
-       
-        $recentFilesPartners = array_slice($fileCreationTimesPartners, 0, 7, true);
-        $recentFilesPrograms = array_slice($fileCreationTimesPrograms, 0, 7, true);
-        $recentFilesServiceProvider = array_slice($fileCreationTimesService_providers, 0, 7, true);
-
-        foreach ($fileCreationTimesPartners as $file => $creationTime) {
-            if (!isset($recentFilesPartners[$file])) {
-                $filePath = $directory . DIRECTORY_SEPARATOR . $file;
-                if (is_file($filePath)) {
-                    if (unlink($filePath)) {
-                        echo "Deleted: $file\n";
-                    } else {
-                        echo "Failed to delete: $file\n";
-                    }
+                if ($modifiedTime < $retention_timestamp) {
+                    $files_to_delete[] = $filePath;
                 }
             }
         }
 
-        //program
-
-        foreach ($fileCreationTimesPrograms as $file => $creationTime) {
-            if (!isset($recentFilesPrograms[$file])) {
-                $filePath = $directory . DIRECTORY_SEPARATOR . $file;
-                if (is_file($filePath)) {
-                    if (unlink($filePath)) {
-                        echo "Deleted: $file\n";
-                    } else {
-                        echo "Failed to delete: $file\n";
-                    }
+        if (!empty($files_to_delete)) {
+            foreach ($files_to_delete as $filePathToDelete) {
+                $filenameToDelete = basename($filePathToDelete);
+                if (unlink($filePathToDelete)) {
+                    error_log("Cron: Deleted old file: $filenameToDelete");
+                } else {
+                    error_log("Cron: Failed to delete file: $filenameToDelete");
                 }
             }
+        } else {
+            error_log("Cron: No files older than " . $retention_days . " days found in: " . $directory);
         }
-
-        //service provider
-
-        foreach ($fileCreationTimesService_providers as $file => $creationTime) {
-            if (!isset($recentFilesServiceProvider[$file])) {
-                $filePath = $directory . DIRECTORY_SEPARATOR . $file;
-                if (is_file($filePath)) {
-                    if (unlink($filePath)) {
-                        echo "Deleted: $file\n";
-                    } else {
-                        echo "Failed to delete: $file\n";
-                    }
-                }
-            }
-        }
-    } 
-
+    } else {
+        error_log("Cron: Directory not found: " . $directory);
+    }
 }
 
 // add_action('init','run_delete_old_exported_files_cron'); // This should only be run via CRON, running on init causes slow website load times
