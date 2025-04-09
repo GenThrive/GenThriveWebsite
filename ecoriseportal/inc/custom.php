@@ -565,10 +565,6 @@ add_action('wp_ajax_nopriv_notif_indicator', 'notif_indicator_ajax_handler');
  * @param string $action     The action to trigger ('trigger' or 'processing').
  */
 function trigger_wp_all_import_url_callback_individual_args(string $export_key, int $export_id, string $action = 'trigger') {
-    // $log_file = WP_CONTENT_DIR . '/uploads/wp_all_import_cron_log.txt';
-    // $timestamp = current_time('mysql');
-    // $log_message = "[$timestamp] Cron job triggered with key: " . $export_key . ", ID: " . $export_id . ", Action: " . $action . "\n";
-    // file_put_contents($log_file, $log_message, FILE_APPEND);
 
     $trigger_url = add_query_arg(
         array(
@@ -579,12 +575,8 @@ function trigger_wp_all_import_url_callback_individual_args(string $export_key, 
         home_url('wp-load.php')
     );
 
-    $response = wp_remote_get($trigger_url);
+    wp_remote_get($trigger_url);
 
-    // if (is_wp_error($response)) {
-    //     $log_message = "[$timestamp] Error triggering WP All Import URL (Export ID: " . $export_id . ", Action: " . $action . "): " . $response->get_error_message() . "\n";
-    //     file_put_contents($log_file, $log_message, FILE_APPEND);
-    // }
 }
 add_action('trigger_wp_all_import_export_hook', 'trigger_wp_all_import_url_callback_individual_args', 10, 3);
 
@@ -649,32 +641,29 @@ function move_eco_export_file_abspath(int $export_id, $exportObj) {
 }
 add_action('pmxe_after_export', 'move_eco_export_file_abspath', 10, 2);
 
-//keep it going for longer reports
+//keep it going for longer cron reports
 function wpae_continue_cron( $export_id, $exportObj ) {
-    $base_url = home_url();
+    $export_key = "pMM5FrXBdg2I";
+    $action = "processing";
+
+    
     // Only run for export ID 12.
-    if ( $export_id == '127' ) {
+    if ( $export_id == '127' || $export_id == '128' || $export_id == '129') {
 
-        // Import 12's 'processing' URL. 
-        $cron_processing_url = $base_url.'wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
+        $trigger_url = add_query_arg(
+            array(
+                'export_key' => $export_key,
+                'export_id'  => $export_id,
+                'action'     => $action,
+            ),
+            home_url('wp-load.php')
+        );
 
-        // Redirect the connection to the 'processing' URL.
-        header( "Location: " .  $cron_processing_url . "" );
-    } elseif ( $export_id == '128' ) {
+        sleep(5);
+    
+        wp_remote_get($trigger_url);
 
-        // Import 12's 'processing' URL. 
-        $cron_processing_url = $base_url.'wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
-
-        // Redirect the connection to the 'processing' URL.
-        header( "Location: " .  $cron_processing_url . "" );
-    } elseif ( $export_id == '129' ) {
-
-        // Import 12's 'processing' URL. 
-        $cron_processing_url = $base_url.'  wp-load.php?export_key=pMM5FrXBdg2I&export_id=129&action=processing';
-
-        // Redirect the connection to the 'processing' URL.
-        header( "Location: " .  $cron_processing_url . "" );
-    }
+    } 
 }
 add_action( 'pmxe_after_iteration', 'wpae_continue_cron', 10, 2 );
 
@@ -721,17 +710,6 @@ function delete_old_exported_files_cron() {
         error_log("Cron: Directory not found: " . $directory);
     }
 }
-
-// add_action('init','run_delete_old_exported_files_cron'); // This should only be run via CRON, running on init causes slow website load times
-
-// function run_delete_old_exported_files_cron(){
-//     $request = isset($_REQUEST['cron_job']) ? $_REQUEST['cron_job'] : "";
-//     if($request == "yes"){
-//         echo do_action('delete_old_wp_exported_files_hook');
-//         exit;
-//     }
-
-// }
 
 function redirect_sample_page_to_404() {
     if (is_page('sample-page')) { 
