@@ -722,3 +722,44 @@ function redirect_sample_page_to_404() {
     }
 }
 add_action('template_redirect', 'redirect_sample_page_to_404');
+
+// wpv-user-reg-date shortcode
+function format_reg_date_func($atts)
+{
+  $user_id = $atts['userid'];
+  $format = $atts['format'];
+  $reg_date = date($format, strtotime(get_userdata($user_id)->user_registered));
+  return $reg_date;
+}
+add_shortcode( 'wpv-user-reg-date', 'format_reg_date_func');
+
+function add_class_to_gf_submit_button( $button, $form ) {
+    // Check if it's the admin backend to avoid affecting the form editor
+    if ( is_admin() ) {
+        return $button;
+    }
+
+    // Define an array of form IDs for which you want to add the class
+    $target_form_ids = array( 14, 15 ); // Replace with your actual form IDs
+
+    // Check if the current form's ID is in our target array
+    if ( in_array( $form['id'], $target_form_ids ) ) {
+        // Define the class you want to add
+        $new_class = 'btn btn-primary';
+
+        // Use a regular expression to add the class to the input tag
+        // This regex looks for an input tag and inserts the new class before the closing bracket.
+        $modified_button = preg_replace( '/<input type=\'submit\'/', '<input type=\'submit\' class=\'' . $new_class . '\'', $button );
+
+        // If you also want to wrap it in a div (as per previous request)
+        $wrapped_button = '<div class="d-flex justify-content-between w-100 border-top pt-1">' . $modified_button . '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div>';
+
+        return $wrapped_button;
+
+    } else {
+        // If it's not one of the target forms, return the original button
+        return $button;
+    }
+}
+add_filter( 'gform_submit_button', 'add_class_to_gf_submit_button', 10, 2 );
+

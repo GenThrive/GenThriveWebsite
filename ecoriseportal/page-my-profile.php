@@ -18,13 +18,17 @@
                 <?php else : ?>
                     <p><?php _e( 'Sorry, no posts matched your criteria.', 'tb_theme' ); ?></p>
                 <?php endif; ?>
-                <?php $myPid = get_current_user_id(); ?>
-                <?php $parentProviderID = (types_render_usermeta( 'user-s-partner-org-id', array( 'user_current' => 'true' ) )); ?>
-                <?php $serviceProviderID = (types_render_usermeta( 'user-s-service-provider-id', array( 'user_current' => 'true' ) )); ?>
+                <?php 
+                    $myPid = get_current_user_id();
+                    $parentProviderID = types_render_usermeta( 'user-s-partner-org-id', array( 'user_current' => 'true' ) ); 
+                    $parentProviderID = ( !empty($parentProviderID) ) ? $parentProviderID : 0;
+                    $serviceProviderID = types_render_usermeta( 'user-s-service-provider-id', array( 'user_current' => 'true' ) );
+                    $serviceProviderID = ( !empty($serviceProviderID) ) ? $serviceProviderID : 0;
+                ?>
                 <div class="container">
                     <?php if ( !is_user_logged_in() ) : ?>
                         <div class="alert alert-primary">
-                            <?php _e( 'You must be logged in to access this page. Please log in below.', 'tb_theme' ); ?> <a )" href="<?php echo esc_url( wp_lostpassword_url( get_site_url().'/my-profile/' ) ); ?>"><?php _e( 'Forgot Password?', 'tb_theme' ); ?></a>
+                            <?php _e( 'You must be logged in to access this page. Please log in below.', 'tb_theme' ); ?> <a href="<?php echo esc_url( wp_lostpassword_url( get_site_url().'/my-profile/' ) ); ?>"><?php _e( 'Forgot Password?', 'tb_theme' ); ?></a>
                         </div>
                     <?php endif; ?>
                     <?php if ( is_user_logged_in() && current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor')  ) : ?>
@@ -114,7 +118,7 @@
                                                         <?php _e( 'Invite User', 'tb_theme' ); ?>
                                                     </button>
                                                 </div>
-                                                <p class="mt-1"><?php _e( 'Now that you have successfully created a Partner Organization profile, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
+                                                <p class="mt-1"><?php _e( 'Now that you have successfully added Service Provider profiles, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
                                                 <div class="collapse mb-1 pt-1" id="collapse-userinvite">
                                                     <?php gravity_form( 16, false, false, false, array('partnerID' => $parentProviderID, 'servicePid' => $serviceProviderID), true, null, true ); ?>
                                                 </div>

@@ -139,4 +139,95 @@ jQuery(function($){
 			});
 		//}, 100);
 	}
+  // Global flag to indicate if the page should refresh after modal closes
+    var shouldRefreshPage = false;
+
+  // Listen for the Bootstrap modal 'show' event
+    $('#deleteUser').on('show.bs.modal', function (event) {
+        // Get the button that triggered the modal
+        var button = $(event.relatedTarget);
+
+        // Extract info from data-* attributes
+        var userId = button.data('userid');
+        var servicePid = button.data('service-pid');
+        var pid = button.data('pid');
+        var userName = button.data('username'); // NEW: Get the userName
+
+        // Get the modal itself
+        var modal = $(this);
+
+        // Populate Gravity Forms fields
+        modal.find('#input_15_2').val(userId);
+        modal.find('#input_15_3').val(servicePid);
+        modal.find('#input_15_4').val(pid);
+
+        // NEW: Populate the div with data-userName
+        modal.find('#deleteUserName').text(userName); // Use .text() for plain text
+
+        // Reset the flag every time the modal is opened
+        shouldRefreshPage = false;
+    });
+
+    // Clear the fields and the div when the modal is hidden
+    $('#deleteUser').on('hidden.bs.modal', function () {
+        var modal = $(this);
+        modal.find('#input_15_2').val('');
+        modal.find('#input_15_3').val('');
+        modal.find('#input_15_4').val('');
+        modal.find('#deleteUserName').empty(); 
+
+        // Check if the page should be refreshed
+        if (shouldRefreshPage) {
+            // Refresh the page
+            location.reload();
+            // Reset the flag immediately to prevent accidental multiple refreshes
+            shouldRefreshPage = false;
+        }
+    });
+
+    // Listen for the Bootstrap modal 'show' event
+    $('#editUser').on('show.bs.modal', function (event) {
+        // Get the button that triggered the modal
+        var button = $(event.relatedTarget);
+
+        // Extract info from data-* attributes
+        var userId = button.data('userid');
+
+        // Get the modal itself
+        var modal = $(this);
+
+        // Populate Gravity Forms fields
+        // modal.find('#input_14_12').val(1111);
+        // Delay the change event by a few milliseconds
+        setTimeout(function() {
+            modal.find('#input_14_12').val(userId).trigger( "change" );
+        }, 500); 
+        
+
+        // Reset the flag every time the modal is opened
+        shouldRefreshPage = false;
+    });
+
+    // Clear the fields and the div when the modal is hidden
+    $('#editUser').on('hidden.bs.modal', function () {
+        var modal = $(this);
+        modal.find('#input_14_12').val('');
+
+        // Check if the page should be refreshed
+        if (shouldRefreshPage) {
+            // Refresh the page
+            location.reload();
+            // Reset the flag immediately to prevent accidental multiple refreshes
+            shouldRefreshPage = false;
+        }
+    });
+
+    // This event fires after an AJAX submission and the confirmation message is loaded.
+    $(document).on('gform_confirmation_loaded', function(event, form_id) {
+        // Check if the confirmation is for the correct form (form ID 15)
+        if (form_id === 14 || form_id === 15) {
+            // Set the flag to true, indicating we need to refresh the page when the modal hides
+            shouldRefreshPage = true;
+        }
+    });
 });
