@@ -30,171 +30,120 @@
                         <div class="alert alert-primary">
                             <?php _e( 'You must be logged in to access this page. Please log in below.', 'tb_theme' ); ?> <a href="<?php echo esc_url( wp_lostpassword_url( get_site_url().'/my-profile/' ) ); ?>"><?php _e( 'Forgot Password?', 'tb_theme' ); ?></a>
                         </div>
-                    <?php endif; ?>
-                    <?php if ( is_user_logged_in() && current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor')  ) : ?>
-                        <ul class="mb-1 nav nav-tabs" id="detailsTab" role="tablist"> 
-                            <li class="nav-item"> <a class="nav-link active" id="myDetails-tab" data-toggle="tab" href="#myDetails" role="tab" aria-controls="myDetails" aria-selected="true"><?php _e( 'Details', 'tb_theme' ); ?></a> 
-                            </li>                                             
-                            <li class="nav-item"> <a class="nav-link" id="serveP-tab" data-toggle="tab" href="#serveP" role="tab" aria-controls="serveP" aria-selected="false"><?php _e( 'Service Providers', 'tb_theme' ); ?></a> 
-                            </li>
-                            <li class="nav-item"> <span class="edit-link text-success nav-link"><a href="<?php echo get_site_url(); ?>/my-inbox/"><?php _e( 'Notifications', 'tb_theme' ); ?></a></span> 
-                            </li>
-                            <li class="nav-item"> <a class="nav-link" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="false"><?php _e( 'Email', 'tb_theme' ); ?></a> 
-                            </li>
-                            <li class="nav-item"> <a class="nav-link" id="acsetting-tab" data-toggle="tab" href="#acsetting" role="tab" aria-controls="acsetting" aria-selected="false"><?php _e( 'Account Settings', 'tb_theme' ); ?></a> 
-                            </li>                                             
-                        </ul>
-                    <?php endif; ?>
-                    <div class="tab-content" id="progDetails"> 
-                        <div class="tab-pane fade show active" id="myDetails" role="tabpanel" aria-labelledby="myDetails-tab">
-                            <div class="row">
-                                <div id="myInfo" class="col-md-8">
-                                    <?php if ( is_user_logged_in() ) : ?>
-                                        <div>
-                                            <div class="h3">
-                                                <?php _e( 'My Info', 'tb_theme' ); ?>
-                                            </div>
-                                            <div id="name"><span><?php echo do_shortcode('[wpv-user field="user_firstname"]'); ?></span> <span><?php echo do_shortcode('[wpv-user field="user_lastname"]'); ?></span>
-                                            </div>
-                                            <div id="email"><span id="email" class="mr-1"><?php echo do_shortcode('[wpv-user field="user_email"]'); ?></span><span id="email"><?php echo do_shortcode('[wpv-user field="user_preferred_email"]'); ?></span>
-                                            </div>
-                                            <div id="phone" class="mb-1"><span id="email" class="mr-1"><?php echo do_shortcode('[wpv-user field="user_phone"]'); ?></span><span id="email"><?php echo do_shortcode('[wpv-user field="user_preferred_phone"]'); ?></span>
-                                            </div>
-                                            <div id="myLinks"><a href="#popmake-617" class="btn btn-outline-primary mr-1"><?php _e( 'Edit Profile', 'tb_theme' ); ?></a> <a href="#popmake-1783" class="btn btn-outline-primary mr-1"><?php _e( 'Change Password', 'tb_theme' ); ?></a>
-                                                <a href="<?php echo get_site_url(); ?>/my-inbox/" class="btn btn-outline-primary mr-1"><?php _e( 'My Inbox', 'tb_theme' ); ?></a>
-                                                <div id="logInOrOut" class="btn btn-outline-primary">
-                                                    <?php wp_loginout( get_site_url().'/my-profile/', true ); ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php if ( !is_user_logged_in() ) : ?>
-                                        <div id="profileLogin">
-                                            <div class="h3 mb-1 text-center">
-                                                <?php _e( 'Log In To Your Profile', 'tb_theme' ); ?>
-                                            </div>
-                                            <?php wp_login_form( array(
-                                                    'redirect' => get_site_url().'/my-profile/',
-                                                    'remember' => true,
-                                                    'value_remember' => false
-                                            )); ?>
-                                        </div>
-                                    <?php endif; ?>
+                    <?php elseif ( ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor') || current_user_can('service_provider_admin') || current_user_can('service_provider_contributor') ) ) : ?>
+                        <?php
+                            $user_data = get_userdata( $myPid );
+                            $user_email = $user_data->user_email;
+                            $user_first_name = get_user_meta( $myPid, 'first_name', true );
+                            $user_last_name = get_user_meta( $myPid, 'last_name', true );
+                            $user_last_name = get_user_meta( $myPid, 'email', true );
+                            $user_preferred_email = get_user_meta( $myPid, 'wpcf-user_preferred_email', true );
+                            $user_phone = get_user_meta( $myPid, 'wpcf-user_phone', true );
+                            $user_preferred_phone = get_user_meta( $myPid, 'wpcf-user_preferred_phone', true );
+                        ?>
+                        <div class="row bg-secondary text-white mb-2 rounded-sm py-2 px-1">
+                            <div class="col-lg-4">
+                                <div class="h3">
+                                    <?php _e( 'My Info', 'tb_theme' ); ?>
                                 </div>
-                                <?php if ( is_user_logged_in() ) : ?>
-                                    <div class="col-12 pt-2">
-                                        <?php if ( !current_user_can('partner') && !current_user_can('partner_contributor') ) : ?>
-                                            <div>
-                                                <div class="h3">
-                                                    <?php _e( 'My&nbsp;Organization', 'tb_theme' ); ?>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <?php echo render_view(array( 'name' => 'user-service-providers', 'userid' => '$myPid')); ?>
-                                                </div>
+                                <div id="name"><span><?php echo $user_first_name; ?></span> <span><?php echo $user_last_name; ?></span>
+                                </div>
+                                <div id="email"><span class="mr-quarter"><?php echo $user_email; ?></span><span><?php echo '('.$user_preferred_email.')'; ?></span>
+                                </div>
+                                <?php if ($user_phone) : ?>
+                                    <div id="phone"><span class="mr-quarter"><?php echo $user_phone; ?></span><span><?php echo '('.$user_preferred_phone.')'; ?></span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-lg-8 d-flex">
+                                <div class="d-flex align-items-center justify-content-end flex-grow-1">
+                                    <a href="#popmake-617" class="btn btn-outline-white mr-1"><?php _e( 'Edit Profile', 'tb_theme' ); ?></a>
+                                    <a href="#popmake-1783" class="btn btn-outline-white mr-1"><?php _e( 'Change Password', 'tb_theme' ); ?></a>
+                                    <div id="logInOrOut" class="btn btn-outline-white">
+                                        <?php wp_loginout( get_site_url().'/my-profile/', true ); ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor')) ) : ?>
+                        <ul class="mb-1 nav nav-tabs" id="detailsTab" role="tablist">                                         
+                            <li class="nav-item"> <a class="nav-link active" id="serveP-tab" data-toggle="tab" href="#serveP" role="tab" aria-controls="serveP" aria-selected="false"><?php _e( 'Service Providers', 'tb_theme' ); ?></a> 
+                            </li>
+                            <li class="nav-item"> <a class="nav-link" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="false"><?php _e( 'Users', 'tb_theme' ); ?></a> 
+                            </li>
+                            <li class="nav-item"> <a class="nav-link" id="communications-tab" data-toggle="tab" href="#comunications" role="tab" aria-controls="comunications" aria-selected="true"><?php _e( 'Communications', 'tb_theme' ); ?></a> 
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="progDetails"> 
+                            <div class="tab-pane fade show active" id="serveP" role="tabpanel" aria-labelledby="serveP-tab">
+                                <div id="partnerInfo">
+                                    <div>
+                                        <div>
+                                            <div class="h3"> <span><?php _e( 'Service Providers of', 'tb_theme' ); ?> </span> 
+                                                <?php echo esc_html( get_the_title($parentProviderID) ); ?> 
                                             </div>
-                                        <?php endif; ?>
-                                        <?php if ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor') ) : ?>
                                             <div class="mb-2">
-                                                <div class="align-items-center d-flex justify-content-between">
-                                                    <h3><?php echo esc_html( get_the_title($parentProviderID) ); ?><span><?php _e( '&nbsp;Users', 'tb_theme' ); ?></span></h3>
-                                                    <button class="mr-quarter btn mr-half btn-outline-primary" type="button" data-toggle="collapse" data-target="#collapse-partnerinvite" aria-expanded="false" aria-controls="collapse-partnerinvite">
-                                                        <?php _e( 'Invite User', 'tb_theme' ); ?>
+                                                <?php echo render_view(array( 'name' => 'partner-user-list-of-service-providers', 'wpvrelatedto' => $parentProviderID)); ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>                                             
+                            </div>
+                            <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+                                <div class="row">
+                                    <div class="col-12 pt-2">
+                                        <div class="mb-2">
+                                            <div class="align-items-center d-flex justify-content-between">
+                                                <h3 class="text-black"><?php echo esc_html( get_the_title($parentProviderID) ); ?><span><?php _e( '&nbsp;Users', 'tb_theme' ); ?></span></h3>
+                                                <button class="mr-quarter btn mr-half btn-outline-primary" type="button" data-toggle="modal" data-target="#invitePartner" aria-expanded="false">
+                                                    <?php _e( 'Invite User', 'tb_theme' ); ?>
+                                                </button>
+                                            </div>
+                                            <p class="mt-1"><?php _e( 'Now that you have successfully created a Partner Organization profile, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
+                                            <!-- Modal for partner invite-->
+                                            <div class="modal fade formModal" id="invitePartner" tabindex="-1" aria-labelledby="invitePartnerLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered modal-lg modal-xg">
+                                                <div class="modal-content rounded-0">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title text-black" id="invitePartnerLabel">Invite Partners</h5>
+                                                    <button type="button" class="close-formModal" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                <p class="mt-1"><?php _e( 'Now that you have successfully created a Partner Organization profile, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
-                                                <div class="collapse mb-1 pt-1" id="collapse-partnerinvite">
+                                                <div class="modal-body">
                                                     <?php gravity_form( 17, false, false, false, array('partnerID' => $parentProviderID, 'servicePid' => $serviceProviderID), true, null, true ); ?>
                                                 </div>
-                                                <div>
-                                                    <?php echo render_view(array( 'name' => 'partners-own-users', 'ofparentself' => $parentProviderID )); ?>
                                                 </div>
                                             </div>
-                                        <?php endif; ?>
-                                        <?php if ( !current_user_can('partner') && !current_user_can('partner_contributor') ) : ?>
-                                            <div> 
-                                                <div class="align-items-center d-flex justify-content-between">
-                                                    <h3><span><?php _e( 'Other&nbsp;', 'tb_theme' ); ?></span><?php echo esc_html( get_the_title($serviceProviderID) ); ?><span><?php _e( '&nbsp;Users', 'tb_theme' ); ?></span></h3>
-                                                    <button class="mr-quarter btn mr-half btn-outline-primary" type="button" data-toggle="collapse" data-target="#collapse-userinvite" aria-expanded="false" aria-controls="collapse-userinvite">
-                                                        <?php _e( 'Invite User', 'tb_theme' ); ?>
-                                                    </button>
-                                                </div>
-                                                <p class="mt-1"><?php _e( 'Now that you have successfully added Service Provider profiles, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
-                                                <div class="collapse mb-1 pt-1" id="collapse-userinvite">
-                                                    <?php gravity_form( 16, false, false, false, array('partnerID' => $parentProviderID, 'servicePid' => $serviceProviderID), true, null, true ); ?>
-                                                </div>
-                                                <div>
-                                                    <?php echo render_view(array( 'name' => 'partner-users-of-service-provider-child-view', 'ofservicep' => $serviceProviderID )); ?>
-                                                </div>                                                                 
                                             </div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>                                             
-                        </div>
-                        <div class="tab-pane fade" id="serveP" role="tabpanel" aria-labelledby="serveP-tab">
-                            <div id="partnerInfo">
-                                <?php if ( is_user_logged_in() ) : ?>
-                                    <div>
-                                        <?php if ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor') ) : ?>
                                             <div>
-                                                <div class="h3"> <span><?php _e( 'Service Providers of', 'tb_theme' ); ?> </span> 
-                                                    <?php echo esc_html( get_the_title($parentProviderID) ); ?> 
-                                                </div>
-                                                <div class="mb-2">
-                                                    <?php echo render_view(array( 'name' => 'partner-user-list-of-service-providers', 'wpvrelatedto' => $parentProviderID)); ?>
-                                                </div>
+                                                <?php echo render_view(array( 'name' => 'partners-own-users', 'ofparentself' => $parentProviderID )); ?>
                                             </div>
-                                        <?php endif; ?>
+                                        </div>
                                     </div>
-                                <?php endif; ?>
-                            </div>                                             
-                        </div>
-                        <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
-                            <?php if ( is_user_logged_in() ) : ?>
+                                </div>                                             
+                            </div>
+                            <div class="tab-pane fade" id="comunications" role="tabpanel" aria-labelledby="comunications-tab">
                                 <div> 
-                                    <?php if ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor') ) : ?>
-                                        <div> 
-                                            <div class="h3"> <span><?php _e( 'Email Service Provider Admins', 'tb_theme' );  ?></span> 
-                                            </div>                                                             
-                                            <?php 
-                                              if($parentProviderID){
+                                    <div> 
+                                        <div class="h3"> <span><?php _e( 'Email Service Provider Admins', 'tb_theme' );  ?></span></div>                                                             
+                                        <?php 
+                                            if($parentProviderID){
                                                 $not_started = render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'0'));
-                                               
-                                             ?>
-                                            <?php $in_progress= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'1')); ?>
-                                            <?php $complete= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'2'));  ?>
-                                            <?php $complete = preg_replace("/\s+/", "", $complete);$in_progress = preg_replace("/\s+/", "", $in_progress);$not_started = preg_replace("/\s+/", "", $not_started); ?>
-                                            <?php gravity_form( 23, false, false, false, array('completed' => $complete, 'in_progress' => $in_progress, 'not_started' => $not_started), true);
-                                             } ?>
-                                        </div>
-                                    <?php endif;  ?> 
+                                                $not_started = preg_replace("/\s+/", "", $not_started);
+                                                $in_progress= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'1'));
+                                                $in_progress = preg_replace("/\s+/", "", $in_progress);
+                                                $complete= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'2'));
+                                                $complete = preg_replace("/\s+/", "", $complete);
+                                                gravity_form( 23, false, false, false, array('completed' => $complete, 'in_progress' => $in_progress, 'not_started' => $not_started), true);
+                                            } 
+                                        ?>
+                                    </div>
                                 </div>
-                            <?php endif; ?> 
+                            </div>
                         </div>
-                        <div class="tab-pane fade" id="acsetting" role="tabpanel" aria-labelledby="acsetting-tab">
-                            <?php if ( is_user_logged_in() ) : ?>
-                                <div> 
-                                    <?php if ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor') ) : ?>
-                                        <div> 
-                                            <div class="row">
-                                                <div class="col-md-6"> 
-                                                    <h3><?php _e( 'Update Account Banner Image', 'tb_theme' ); ?></h3>
-                                                    <?php if ( has_post_thumbnail( $serviceProviderID ) ) : ?>
-                                                        <?php echo get_the_post_thumbnail( $serviceProviderID, 'medium' ); ?>
-                                                    <?php endif; ?>
-                                                    <?php echo cred_form(6516,$serviceProviderID); ?>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <h3><?php _e( 'Default Approver for Company', 'tb_theme' ); ?></h3>
-                                                    <?php gravity_form( 20, false, false, false, '', false ); ?> 
-                                                </div>
-                                            </div>                                                             
-                                        </div>
-                                    <?php endif; ?> 
-                                </div>
-                            <?php endif; ?> 
-                        </div>                                         
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

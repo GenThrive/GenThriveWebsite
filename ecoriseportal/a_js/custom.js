@@ -211,7 +211,7 @@ jQuery(function($){
     // Clear the fields and the div when the modal is hidden
     $('#editUser').on('hidden.bs.modal', function () {
         var modal = $(this);
-        modal.find('#input_14_12').val('');
+        modal.find('#input_14_12').val('').trigger( "change" );
 
         // Check if the page should be refreshed
         if (shouldRefreshPage) {

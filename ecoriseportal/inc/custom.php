@@ -740,7 +740,7 @@ function add_class_to_gf_submit_button( $button, $form ) {
     }
 
     // Define an array of form IDs for which you want to add the class
-    $target_form_ids = array( 14, 15 ); // Replace with your actual form IDs
+    $target_form_ids = array( 14, 15, 17 ); // Replace with your actual form IDs
 
     // Check if the current form's ID is in our target array
     if ( in_array( $form['id'], $target_form_ids ) ) {

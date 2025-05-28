@@ -1,0 +1,25 @@
+/* Global Variables and JR SCSS ONLY - Custom theme CSS goes in theme.scss */
+/* Bootstrap theme customized with Pinegrow Web Editor */
+/* Nothing goes below this note */
+#logInOrOut a {
+  color: #fff;
+}
+#logInOrOut a:hover {
+  color: #000;
+}
+
+.formModal .modal-content {
+  border: 8px solid #000000;
+  border-radius: 3px;
+}
+.formModal .modal-content .close-formModal {
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background-color: #000000;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  position: relative;
+  top: -35px;
+  right: -35px;
+}/*# sourceMappingURL=non-pg.css.map */

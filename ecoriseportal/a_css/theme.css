@@ -1553,7 +1553,7 @@ header.hasFeature {
 
 #jr-header #stickyBar {
   top: 0;
-  z-index: 99999;
+  z-index: 1040;
   position: fixed;
   width: 100%;
   padding-left: 0;
