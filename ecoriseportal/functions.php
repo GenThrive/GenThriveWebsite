@@ -466,7 +466,7 @@ if (!function_exists('tb_theme_customize_register')) :
     add_action('customize_register', 'tb_theme_customize_register');
 endif; // tb_theme_customize_register
 
-const THEME_VER = 1.34;
+const THEME_VER = 1.38;
 if (!function_exists('tb_theme_enqueue_scripts')) :
     function tb_theme_enqueue_scripts()
     {
@@ -494,7 +494,7 @@ if (!function_exists('tb_theme_enqueue_scripts')) :
 
         /* Pinegrow generated Enqueue Styles Begin */
 
-        wp_enqueue_style('bootstrap-css', get_template_directory_uri() . '/bootstrap/css/bootstrap.css', null, 1, 'all');
+        wp_enqueue_style('bootstrap-css', get_template_directory_uri() . '/bootstrap/css/bootstrap.css', null, 1.1, 'all');
 
         wp_enqueue_style('main-theme-css', get_template_directory_uri() . '/a_css/theme.css', array('bootstrap-css'), THEME_VER, 'all');
 

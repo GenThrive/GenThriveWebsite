@@ -4,34 +4,18 @@
     <div id="content" tabindex="-1">
         <div class="content-area" id="primary">
             <div id="main-content">
-                <?php $user_prog_id = (types_render_usermeta('user-s-service-provider-id', array('separator' => ',', 'user_current' => 'true'))); ?>
-                <?php $page_ID = get_the_ID(); ?>
-                <?php $user_prog_array = explode(',', $user_prog_id); ?>
-                <div>
-                    <?php if (have_posts()) : ?>
-                        <?php while (have_posts()) : the_post(); ?>
-                            <?php PG_Helper::rememberShownPost(); ?>
-                            <article <?php post_class(); ?> id="post-<?php the_ID(); ?>">
-                                    <div>
-                                        <header class="container entry-header">
-                                        </header>
-                                        <div class="container entry-content">
-											 
-                                            <?php the_content(); ?>
-                                            <?php wp_link_pages(array()); ?>
-                                        </div>
-                                        <footer class="container entry-footer">
-                                            <?php if (has_tag()) : ?>
-                                                <span class="tags-links"><?php the_tags('Tags: ', ', '); ?></span>
-                                            <?php endif; ?>
-                                            <?php edit_post_link('<b class="text-success">Edit Post</b>'); ?>
-                                        </footer>
-                                    </div>
-                            </article>
-                        <?php endwhile; ?>
-                    <?php else : ?>
-                        <p><?php _e('Sorry, no posts matched your criteria.', 'tb_theme'); ?></p>
-                    <?php endif; ?>
+                <?php
+                    $user_prog_id = (types_render_usermeta('user-s-service-provider-id', array('separator' => ',', 'user_current' => 'true')));
+                    $page_ID = get_the_ID();
+                    $user_prog_array = explode(',', $user_prog_id); 
+                ?>
+                <div class="container">
+                    <?php 
+                        echo render_view_template( 29377, $page_ID );
+                        echo render_view_template( 22524, $page_ID );
+                        if (current_user_can('administrator')) 
+                            edit_post_link('<b class="text-success">Edit Post</b>');
+                    ?>
                 </div>
             </div>
         </div>

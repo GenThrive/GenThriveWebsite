@@ -66,6 +66,10 @@
                             </div>
                         </div>
                     <?php endif; ?>
+                    <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('service_provider_admin') || current_user_can('service_provider_contributor')) ) : 
+                        echo render_view_template( 29377, $serviceProviderID );
+                    ?>
+                    <?php endif; ?>
                     <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor')) ) : ?>
                         <ul class="mb-1 nav nav-tabs" id="detailsTab" role="tablist">                                         
                             <li class="nav-item"> <a class="nav-link active" id="serveP-tab" data-toggle="tab" href="#serveP" role="tab" aria-controls="serveP" aria-selected="false"><?php _e( 'Service Providers', 'tb_theme' ); ?></a> 

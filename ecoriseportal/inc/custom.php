@@ -425,9 +425,13 @@ function toolset_get_five_elements($atts, $content)
 add_shortcode('show_organization_logo', 'toolset_show_organization_logo');
 function toolset_show_organization_logo($atts, $content)
 {
-    $logo_src_string = do_shortcode($content);
-    $logo_src = string_between_two_string($logo_src_string, '["', '"]');
-    return stripslashes($logo_src);
+    // Check if the content starts with '[' and ends with ']'
+    if ( str_starts_with( $content, '[' ) && str_ends_with( $content, ']' ) ) {
+        // Remove the opening and closing brackets
+        $content = substr( $content, 1, -1 );
+    }
+
+    return $content;
 }
 
 /**
@@ -460,6 +464,30 @@ function toolset_trim_program_description($atts, $content)
     }
     return $trimmed_content;
 }
+
+function manage_button_shortcode( $atts ) {
+    // Set default attributes for the shortcode
+    $atts = shortcode_atts(
+        array(
+            'url' => '#', // Default URL if not provided
+        ),
+        $atts,
+        'manage_button'
+    );
+
+    $button_url = esc_url( $atts['url'] ); // Sanitize the URL
+
+    // Check if the current page is NOT a single 'service-provider' post
+    if ( ! is_singular( 'service-provider' ) ) {
+        // Output the button HTML
+        $output = '<div class="d-flex justify-content-end align-items-start flex-grow-1"><a class="btn btn-outline-primary" href="' . $button_url . '" target="_blank" rel="noopener noreferrer">Manage</a></div>';
+        return $output;
+    }
+
+    // If it is a single 'service-provider' post, return nothing
+    return '';
+}
+add_shortcode( 'manage_button', 'manage_button_shortcode' );
 
 /**
  * 
