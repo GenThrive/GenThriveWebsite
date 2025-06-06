@@ -466,7 +466,7 @@ if (!function_exists('tb_theme_customize_register')) :
     add_action('customize_register', 'tb_theme_customize_register');
 endif; // tb_theme_customize_register
 
-const THEME_VER = 1.38;
+const THEME_VER = 1.39;
 if (!function_exists('tb_theme_enqueue_scripts')) :
     function tb_theme_enqueue_scripts()
     {

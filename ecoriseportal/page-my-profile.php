@@ -66,9 +66,34 @@
                             </div>
                         </div>
                     <?php endif; ?>
-                    <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('service_provider_admin') || current_user_can('service_provider_contributor')) ) : 
-                        echo render_view_template( 29377, $serviceProviderID );
-                    ?>
+                    <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('service_provider_admin') || current_user_can('service_provider_contributor')) ) : ?>
+                        <?php echo render_view_template( 29377, $serviceProviderID );?>
+                        <div class="align-items-center d-flex justify-content-between">
+                            <h3 class="text-black"><?php echo esc_html( get_the_title($serviceProviderID) ); ?><span><?php _e( '&nbsp;Users', 'tb_theme' ); ?></span></h3>
+                            <button class="mr-quarter btn mr-half btn-outline-primary" type="button" data-toggle="modal" data-target="#inviteSP" aria-expanded="false">
+                                <?php _e( 'Invite User', 'tb_theme' ); ?>
+                            </button>
+                        </div>
+                        <p class="mt-1"><?php _e( 'Now that you have successfully created a Service Provider profile, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
+                        <!-- Modal for service provider invite-->
+                        <div class="modal fade formModal" id="inviteSP" tabindex="-1" aria-labelledby="inviteSPLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg modal-xg">
+                                <div class="modal-content rounded-0">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="inviteSPLabel">Invite Service Provider Contributor</h5>
+                                    <button type="button" class="close-formModal" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <?php gravity_form( 16, false, false, false, array('partnerID' => $parentProviderID, 'servicePid' => $serviceProviderID), true, null, true ); ?>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>                
+                            <?php echo render_view(array( 'name' => 'partner-users-of-service-provider-child-view', 'ofservicep' => $serviceProviderID ));?>
+                        </div>
                     <?php endif; ?>
                     <?php if ( is_user_logged_in() && ( current_user_can('administrator') || current_user_can('partner') || current_user_can('partner_contributor')) ) : ?>
                         <ul class="mb-1 nav nav-tabs" id="detailsTab" role="tablist">                                         
@@ -146,6 +171,38 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <!-- Modal for Deleting User-->
+                        <div class="modal fade formModal" id="deleteUser" tabindex="-1" aria-labelledby="deleteUserLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content rounded-0">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-black" id="deleteUserLabel">Are you sure you want to remove this user from this account?</h5>
+                                <button type="button" class="close-formModal" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <?php gravity_form(15, false, false, false, null, true, null, true); ?>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- Modal for Edit User-->
+                        <div class="modal fade formModal" id="editUser" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg modal-xl">
+                            <div class="modal-content rounded-0">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-black" id="editUserLabel">Edit User Info</h5>
+                                <button type="button" class="close-formModal" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <?php gravity_form(14, false, false, false, null, true, null, true); ?>
+                            </div>
+                            </div>
+                        </div>
                         </div>
                     <?php endif; ?>
                 </div>

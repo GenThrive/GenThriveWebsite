@@ -201,7 +201,7 @@ jQuery(function($){
         // Delay the change event by a few milliseconds
         setTimeout(function() {
             modal.find('#input_14_12').val(userId).trigger( "change" );
-        }, 500); 
+        }, 800); 
         
 
         // Reset the flag every time the modal is opened
