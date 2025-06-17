@@ -82,11 +82,6 @@ function filter_reject_label_workflow_detail( $reject_label, $step ) {
    return 'Needs Revision';
 }
 
-require_once "gw-update-posts.php";
-require_once "gravity-flow-extend.php";
-// require_once "daisy-chain-provider-forms.php";
-require_once "hide-field-by-parent-org.php";
-
 //redirect user after passord reset
 add_action('login_headerurl', 'wpse_lost_password_redirect');
 function wpse_lost_password_redirect() {
