@@ -1,6 +1,5 @@
 <?php
-/*require_once "custom-woo.php";
-require_once "jr_navwalker.php";*/
+require_once "genthrive-custom.php";
 require_once "standard_nav.php";
 require_once "mobile_locations.php";
 // require_once "gw-update-posts.php";
