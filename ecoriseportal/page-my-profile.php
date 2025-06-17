@@ -48,10 +48,10 @@
                                 </div>
                                 <div id="name"><span><?php echo $user_first_name; ?></span> <span><?php echo $user_last_name; ?></span>
                                 </div>
-                                <div id="email"><span class="mr-quarter"><?php echo $user_email; ?></span><span><?php echo '('.$user_preferred_email.')'; ?></span>
+                                <div id="email"><span class="mr-quarter"><?php echo $user_email; ?></span><span><?php echo (!empty($user_preferred_email)) ? '('.$user_preferred_email.')' : ''; ?></span>
                                 </div>
                                 <?php if ($user_phone) : ?>
-                                    <div id="phone"><span class="mr-quarter"><?php echo $user_phone; ?></span><span><?php echo '('.$user_preferred_phone.')'; ?></span>
+                                    <div id="phone"><span class="mr-quarter"><?php echo $user_phone; ?></span><span><?php echo (!empty($user_preferred_phone)) ? '('.$user_preferred_phone.')' : ''; ?></span>
                                     </div>
                                 <?php endif; ?>
                             </div>
