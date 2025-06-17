@@ -99,7 +99,7 @@
                         <ul class="mb-1 nav nav-tabs" id="detailsTab" role="tablist">                                         
                             <li class="nav-item"> <a class="nav-link active" id="serveP-tab" data-toggle="tab" href="#serveP" role="tab" aria-controls="serveP" aria-selected="false"><?php _e( 'Service Providers', 'tb_theme' ); ?></a> 
                             </li>
-                            <li class="nav-item"> <a class="nav-link" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="false"><?php _e( 'Users', 'tb_theme' ); ?></a> 
+                            <li class="nav-item"> <a class="nav-link" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="false"><?php _e( 'Collaborators', 'tb_theme' ); ?></a> 
                             </li>
                             <li class="nav-item"> <a class="nav-link" id="communications-tab" data-toggle="tab" href="#comunications" role="tab" aria-controls="comunications" aria-selected="true"><?php _e( 'Communications', 'tb_theme' ); ?></a> 
                             </li>
@@ -126,7 +126,7 @@
                                             <div class="align-items-center d-flex justify-content-between">
                                                 <h3 class="text-black"><?php echo esc_html( get_the_title($parentProviderID) ); ?><span><?php _e( '&nbsp;Users', 'tb_theme' ); ?></span></h3>
                                                 <button class="mr-quarter btn mr-half btn-outline-primary" type="button" data-toggle="modal" data-target="#invitePartner" aria-expanded="false">
-                                                    <?php _e( 'Invite User', 'tb_theme' ); ?>
+                                                    <?php _e( 'Invite Collaborator', 'tb_theme' ); ?>
                                                 </button>
                                             </div>
                                             <p class="mt-1"><?php _e( 'Now that you have successfully created a Partner Organization profile, you can invite others in your organization to add, edit, and delete information by clicking the "Invite User" button.', 'tb_theme' ); ?></p> 
@@ -158,15 +158,86 @@
                                     <div> 
                                         <div class="h3"> <span><?php _e( 'Email Service Provider Admins', 'tb_theme' );  ?></span></div>                                                             
                                         <?php 
-                                            if($parentProviderID){
-                                                $not_started = render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'0'));
-                                                $not_started = preg_replace("/\s+/", "", $not_started);
-                                                $in_progress= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'1'));
-                                                $in_progress = preg_replace("/\s+/", "", $in_progress);
-                                                $complete= render_view(array( 'name' => 'email-all-sp-in-x-status', 'mypartner'=>$parentProviderID, 'accstatus'=>'2'));
-                                                $complete = preg_replace("/\s+/", "", $complete);
-                                                gravity_form( 23, false, false, false, array('completed' => $complete, 'in_progress' => $in_progress, 'not_started' => $not_started), true);
-                                            } 
+                                            
+
+                                            // Your main code block
+                                            if ($parentProviderID) {
+                                                // Query for 'Not Started' (accstatus = 0)
+                                                $args_not_started = array(
+                                                    'post_type'  => array('partner-organization', 'service-provider'),
+                                                    'meta_query' => array(
+                                                        array(
+                                                            'key'   => 'wpcf-onboarding_account_status',
+                                                            'value' => '0',
+                                                        ),
+                                                    ),
+                                                    'fields'     => 'ids', // Get only post IDs
+                                                    'posts_per_page' => -1, // Get all matching posts
+                                                );
+                                                $query_not_started = new WP_Query($args_not_started);
+                                                $not_started_ids = implode(',', $query_not_started->posts);
+                                                // The previous count ($query_not_started->found_posts) is the count of posts,
+                                                // which you decided not to use for the final count displayed.
+                                                // $not_started_post_count = $query_not_started->found_posts;
+
+
+                                                // Query for 'In Progress' (accstatus = 1)
+                                                $args_in_progress = array(
+                                                    'post_type'  => array('partner-organization', 'service-provider'),
+                                                    'meta_query' => array(
+                                                        array(
+                                                            'key'   => 'wpcf-onboarding_account_status',
+                                                            'value' => '1',
+                                                        ),
+                                                    ),
+                                                    'fields'     => 'ids',
+                                                    'posts_per_page' => -1,
+                                                );
+                                                $query_in_progress = new WP_Query($args_in_progress);
+                                                $in_progress_ids = implode(',', $query_in_progress->posts);
+                                                // $in_progress_post_count = $query_in_progress->found_posts;
+
+
+                                                // Query for 'Complete' (accstatus = 2)
+                                                $args_complete = array(
+                                                    'post_type'  => array('partner-organization', 'service-provider'),
+                                                    'meta_query' => array(
+                                                        array(
+                                                            'key'   => 'wpcf-onboarding_account_status',
+                                                            'value' => '2',
+                                                        ),
+                                                    ),
+                                                    'fields'     => 'ids',
+                                                    'posts_per_page' => -1,
+                                                );
+                                                $query_complete = new WP_Query($args_complete);
+                                                $complete_ids = implode(',', $query_complete->posts);
+                                                // $complete_post_count = $query_complete->found_posts;
+
+
+                                                // Now, get the user emails and their counts using the helper function
+                                                $not_started_data = get_users_by_service_provider_ids($not_started_ids);
+                                                $not_started_emails = implode(',', $not_started_data['emails']);
+                                                $not_started_count = $not_started_data['count'];
+
+                                                $in_progress_data = get_users_by_service_provider_ids($in_progress_ids);
+                                                $in_progress_emails = implode(',', $in_progress_data['emails']);
+                                                $in_progress_count = $in_progress_data['count'];
+
+                                                $complete_data = get_users_by_service_provider_ids($complete_ids);
+                                                $complete_emails = implode(',', $complete_data['emails']);
+                                                $complete_count = $complete_data['count'];
+
+
+
+                                                // Pass the IDs (as before) and the new email counts to gravity_form
+                                                gravity_form(23, false, false, false, array(
+                                                    'completed'   => $complete_emails, // Changed to emails string for consistency with old output
+                                                    'in_progress' => $in_progress_emails, // Changed to emails string for consistency with old output
+                                                    'not_started' => $not_started_emails, // Changed to emails string for consistency with old output
+                                                ), true);
+
+                                            }
                                         ?>
                                     </div>
                                 </div>

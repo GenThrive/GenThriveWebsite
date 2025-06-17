@@ -780,7 +780,7 @@ function add_class_to_gf_submit_button( $button, $form ) {
         $modified_button = preg_replace( '/<input type=\'submit\'/', '<input type=\'submit\' class=\'' . $new_class . '\'', $button );
 
         // If you also want to wrap it in a div (as per previous request)
-        $wrapped_button = '<div class="d-flex justify-content-between w-100 border-top pt-1">' . $modified_button . '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div>';
+        $wrapped_button = '<div class="d-flex justify-content-between w-100 border-top pt-1"><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>' . $modified_button . '</div>';
 
         return $wrapped_button;
 
@@ -790,4 +790,160 @@ function add_class_to_gf_submit_button( $button, $form ) {
     }
 }
 add_filter( 'gform_submit_button', 'add_class_to_gf_submit_button', 10, 2 );
+
+/**
+ * Retrieves the email addresses of users associated with a given set of service provider IDs and their count.
+ *
+ * @param array|string $service_provider_ids An array of service provider IDs or a comma-separated string of IDs.
+ * @return array An associative array with 'emails' (array of user email addresses) and 'count' (number of unique emails).
+ * Returns an array with empty 'emails' and 0 'count' if no users are found.
+ */
+function get_users_by_service_provider_ids($service_provider_ids) {
+    $result = array(
+        'emails' => array(),
+        'count'  => 0,
+    );
+
+    if (empty($service_provider_ids)) {
+        return $result;
+    }
+
+    // If a comma-separated string is passed, convert it to an array
+    if (is_string($service_provider_ids)) {
+        $service_provider_ids = array_map('trim', explode(',', $service_provider_ids));
+        // Remove any empty strings that might result from explode (e.g., "1,,2")
+        $service_provider_ids = array_filter($service_provider_ids);
+    }
+
+    // $service_provider_ids = array_map('intval', $service_provider_ids); // Uncomment if your meta field stores numbers
+
+    $args = array(
+        'meta_query' => array(
+            array(
+                'key'     => 'wpcf-user-s-service-provider-id',
+                'value'   => $service_provider_ids,
+                'compare' => 'IN', // Look for users where the meta value is IN the array of provided IDs
+            ),
+        ),
+        'fields'     => 'user_email', // Only retrieve user email addresses
+    );
+
+    $user_query = new WP_User_Query($args);
+
+    if (!empty($user_query->get_results())) {
+        $user_emails = array();
+        foreach ($user_query->get_results() as $user_email) {
+            $user_emails[] = $user_email;
+        }
+        $result['emails'] = array_unique($user_emails); // Ensure unique emails
+        $result['count'] = count($result['emails']);
+    }
+
+    return $result;
+}
+
+/**
+ * Dynamically appends counts to Gravity Forms checkbox choices.
+ *
+ * This function hooks into gform_pre_render to modify the labels
+ * of a specific checkbox field by re-querying for the necessary counts.
+ *
+ * @param array $form The form object.
+ * @return array The modified form object.
+ */
+function custom_gf_append_counts_to_choices($form) {
+    // Only apply this to your specific form (Form ID 23)
+    if ($form['id'] != 23) {
+        return $form;
+    }
+
+    $parentProviderID = types_render_usermeta( 'user-s-partner-org-id', array( 'user_current' => 'true' ) ); 
+    $parentProviderID = ( !empty($parentProviderID) ) ? $parentProviderID : 0;
+
+    $not_started_count = 0;
+    $in_progress_count = 0;
+    $complete_count = 0;
+    $all_providers_count = 0; // Initialize for summed total
+
+    if ($parentProviderID) {
+        // Query for 'Not Started' (onboarding_account_status = 0)
+        $args_not_started = array(
+            'post_type'      => array('partner-organization', 'service-provider'),
+            'meta_query'     => array(
+                array(
+                    'key'   => 'wpcf-onboarding_account_status',
+                    'value' => '0',
+                ),
+            ),
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+        );
+        $query_not_started = new WP_Query($args_not_started);
+        $not_started_ids = implode(',', $query_not_started->posts);
+        $not_started_data = get_users_by_service_provider_ids($not_started_ids);
+        $not_started_count = $not_started_data['count'];
+
+        // Query for 'In Progress' (onboarding_account_status = 1)
+        $args_in_progress = array(
+            'post_type'      => array('partner-organization', 'service-provider'),
+            'meta_query'     => array(
+                array(
+                    'key'   => 'wpcf-onboarding_account_status',
+                    'value' => '1',
+                ),
+            ),
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+        );
+        $query_in_progress = new WP_Query($args_in_progress);
+        $in_progress_ids = implode(',', $query_in_progress->posts);
+        $in_progress_data = get_users_by_service_provider_ids($in_progress_ids);
+        $in_progress_count = $in_progress_data['count'];
+
+        // Query for 'Complete' (onboarding_account_status = 2)
+        $args_complete = array(
+            'post_type'      => array('partner-organization', 'service-provider'),
+            'meta_query'     => array(
+                array(
+                    'key'   => 'wpcf-onboarding_account_status',
+                    'value' => '2',
+                ),
+            ),
+            'fields'         => 'ids',
+            'posts_per_page' => -1,
+        );
+        $query_complete = new WP_Query($args_complete);
+        $complete_ids = implode(',', $query_complete->posts);
+        $complete_data = get_users_by_service_provider_ids($complete_ids);
+        $complete_count = $complete_data['count'];
+
+        // Calculate "All Service Providers" count by summing the individual status counts
+        $all_providers_count = $not_started_count + $in_progress_count + $complete_count;
+    }
+
+    // Loop through form fields to find checkbox field ID 4
+    foreach ($form['fields'] as &$field) {
+        if ($field->id == 4 && $field->type == 'checkbox') {
+            foreach ($field->choices as &$choice) {
+                switch ($choice['text']) {
+                    case 'Not Started':
+                        $choice['text'] .= ' (' . $not_started_count . ')';
+                        break;
+                    case 'In Progress':
+                        $choice['text'] .= ' (' . $in_progress_count . ')';
+                        break;
+                    case 'Completed':
+                        $choice['text'] .= ' (' . $complete_count . ')';
+                        break;
+                    case 'All Service Providers':
+                        $choice['text'] .= ' (' . $all_providers_count . ')';
+                        break;
+                }
+            }
+        }
+    }
+
+    return $form;
+}
+add_filter('gform_pre_render_23', 'custom_gf_append_counts_to_choices');
 
