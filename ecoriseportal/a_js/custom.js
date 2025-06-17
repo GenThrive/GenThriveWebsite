@@ -1,6 +1,89 @@
 //all non-greensock js goes here
 jQuery(document).ready(function () {}); //end jQuery onLoad
 
+// Javascript to enable link to tab
+  const queryString  = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  let selectedTab = urlParams.get('tab');
+  if (urlParams.has('tab')) {
+    jQuery('.nav-link[href="'+'#'+selectedTab+'"]' ).trigger('click');
+  }
+
+  jQuery(".search_provider").each(function() {
+      jQuery(this).click(function(){
+      var parameter = jQuery(this).parent(".search_front").find("input").val();
+      //window.location = "https://genthrive.org/service-provider/?wpv_post_search=" + parameter + "&wpv_aux_current_post_id=6481&wpv_aux_parent_post_id=6481&wpv_view_count=628-TCPID6481";
+      window.location = "https://genthrive.org/service-provider/?wpv_post_search=" + parameter;
+      });
+    });
+
+    if (typeof gform !== 'undefined') {
+      gform.addFilter('gpaa_values', function (values, place) {
+      if(values.country == 'United States'){
+        var states = [
+            ['Arizona', 'AZ'],
+            ['Alabama', 'AL'],
+            ['Alaska', 'AK'],
+            ['Arkansas', 'AR'],
+            ['California', 'CA'],
+            ['Colorado', 'CO'],
+            ['Connecticut', 'CT'],
+            ['Delaware', 'DE'],
+            ['Florida', 'FL'],
+            ['Georgia', 'GA'],
+            ['Hawaii', 'HI'],
+            ['Idaho', 'ID'],
+            ['Illinois', 'IL'],
+            ['Indiana', 'IN'],
+            ['Iowa', 'IA'],
+            ['Kansas', 'KS'],
+            ['Kentucky', 'KY'],
+            ['Louisiana', 'LA'],
+            ['Maine', 'ME'],
+            ['Maryland', 'MD'],
+            ['Massachusetts', 'MA'],
+            ['Michigan', 'MI'],
+            ['Minnesota', 'MN'],
+            ['Mississippi', 'MS'],
+            ['Missouri', 'MO'],
+            ['Montana', 'MT'],
+            ['Nebraska', 'NE'],
+            ['Nevada', 'NV'],
+            ['New Hampshire', 'NH'],
+            ['New Jersey', 'NJ'],
+            ['New Mexico', 'NM'],
+            ['New York', 'NY'],
+            ['North Carolina', 'NC'],
+            ['North Dakota', 'ND'],
+            ['Ohio', 'OH'],
+            ['Oklahoma', 'OK'],
+            ['Oregon', 'OR'],
+            ['Pennsylvania', 'PA'],
+            ['Rhode Island', 'RI'],
+            ['South Carolina', 'SC'],
+            ['South Dakota', 'SD'],
+            ['Tennessee', 'TN'],
+            ['Texas', 'TX'],
+            ['Utah', 'UT'],
+            ['Vermont', 'VT'],
+            ['Virginia', 'VA'],
+            ['Washington', 'WA'],
+            ['West Virginia', 'WV'],
+            ['Wisconsin', 'WI'],
+            ['Wyoming', 'WY'],
+        ];
+          // values.postcode =  values.postcode.split("-")[0];
+          var stateProvince = values.stateProvince;
+      for(i = 0; i < states.length; i++){
+          if(states[i][0] == stateProvince){
+            values.stateProvince = states[i][1];
+          }
+      }
+      }
+          return values;
+      });
+    }
+
 if (jQuery(".popmake-11489")) {
   jQuery(".popmake-11489").css("background-color", "#989898");
   jQuery(".popmake-11489").css("border-color", "#989898");
