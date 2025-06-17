@@ -1,4 +1,7 @@
 <?php
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /**
  * Gravity Wiz // Gravity Forms // Update Posts
  *
@@ -133,9 +136,10 @@ class GW_Update_Posts {
 					// Map all other custom fields generically.
 					if ( ! rgblank( $meta_value ) ) {
 						$meta_input[ $key ] = $meta_value;
-					} elseif ( $this->_args['delete_if_empty'] ) {
-						delete_post_meta( $post->ID, $key );
-					}
+					} 
+					// elseif ( $this->_args['delete_if_empty'] ) {
+					// 	delete_post_meta( $post->ID, $key );
+					// }
 				}
 			}
 
@@ -187,3 +191,68 @@ class GW_Update_Posts {
 	}
 
 }
+
+new GW_Update_Posts( array(
+	'form_id' => 2,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+    'wpcf-org_details_status' => 10,
+    'wpcf-org_details_last_contributor' => 21
+	)
+) );
+
+new GW_Update_Posts( array(
+	'form_id' => 3,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+    'wpcf-org_mission_status' => 15,
+    'wpcf-org_mission_last_contributor' => 25
+
+	)
+) );
+
+new GW_Update_Posts( array(
+	'form_id' => 4,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+	'wpcf-org_staff_last_contributor' => 16,
+    'wpcf-org_staff_status' => 9
+	)
+) );
+
+new GW_Update_Posts( array(
+	'form_id' => 5,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+    'wpcf-org_network_status' => 9,
+    'wpcf-org_network_contributor' => 28
+	)
+) );
+
+new GW_Update_Posts( array(
+	'form_id' => 6,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+    'wpcf-prgm_status' => 64,
+    'wpcf-prgm_created' => 65
+	)
+) );
+
+new GW_Update_Posts( array(
+	'form_id' => 25,
+	'post_id' => get_the_ID(),
+	'meta'    => array(
+	'wpcf-org_network_created' => 70,
+    'wpcf-org_staff_created' => 70,
+    'wpcf-org_mission_created' => 70,
+	'wpcf-org_details_created' => 70,
+	'wpcf-org_network_updated' => 71,
+	'wpcf-org_staff_last_updated' => 71,
+	'wpcf-org_mission_last_updated' => 71,
+	'wpcf-org_details_last_updated' => 71,
+	'wpcf-org_network_last_contributor' => 77,
+	'wpcf-org_staff_last_contributor' => 77,
+	'wpcf-org_mission_last_contributor' => 77,
+	'wpcf-org_details_last_contributor' => 77,
+	)
+) );
