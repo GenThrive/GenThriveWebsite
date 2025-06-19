@@ -278,20 +278,6 @@ return $text;
 }
 
 
-
-add_action( 'gform_after_submission_25', 'set_update_status', 10, 2 );
-function set_update_status( $entry, $form ) {
-  $post_id = $entry[72];
-
-  update_post_meta( $post_id,'wpcf-org_network_status', 'complete' );
-  update_post_meta( $post_id,'wpcf-org_staff_status', 'complete' );
-  update_post_meta( $post_id,'wpcf-org_mission_status', 'complete' );
-  update_post_meta( $post_id,'wpcf-org_details_status', 'complete' );
-
-  get_lat_long_from_address($post_id);
-
-}
-
 add_filter( 'gform_confirmation', function ( $confirmation, $form, $entry, $ajax ) {
 
   $forms = array( 25 ); 
@@ -305,8 +291,8 @@ add_filter( 'gform_confirmation', function ( $confirmation, $form, $entry, $ajax
   global $wp;
   $url = esc_url_raw( home_url( add_query_arg( $_GET, $wp->request ) ) );
   
-  $confirmation = '<div class="gform_confirmation_wrapper"><h3><span style="color: #000000;">Your information has been submitted and is currently under review.</span></h3>
-  This page will now refresh so you can fill in at least one program below to allow your account to be active once it is approved.</div>';
+  $confirmation = '<div class="gform_confirmation_wrapper"><h3><span style="color: #000000;">Your information has been submitted.</span></h3>
+  This page will now refresh so you can fill in at least one program below to allow your account to be active.</div>';
   $confirmation .= "<script type=\"text/javascript\">setTimeout(function () { window.location.assign('$url') }, 3500);</script>";
   }
 
@@ -740,6 +726,8 @@ function process_after_SP_forms($entry, $form){
           }
           elseif ( $form_id === 25 ) {
             $post_id = $entry[72];
+            $date_created = $entry[70];
+            $contributor = $entry[73];
 
             $AddressMeta = array(
               'wpcf-org_billingstreet' => '5.1',
@@ -759,6 +747,20 @@ function process_after_SP_forms($entry, $form){
             update_post_meta( $post_id,'wpcf-org_staff_status', 'complete' );
             update_post_meta( $post_id,'wpcf-org_mission_status', 'complete' );
             update_post_meta( $post_id,'wpcf-org_details_status', 'complete' );
+            update_post_meta( $post_id,'wpcf-org_network_created', $date_created );
+            update_post_meta( $post_id,'wpcf-org_mission_created', $date_created );
+            update_post_meta( $post_id,'wpcf-org_details_created', $date_created );
+            update_post_meta( $post_id,'wpcf-org_network_updated', $date_created );
+            update_post_meta( $post_id,'wpcf-org_staff_last_updated', $date_created );
+            update_post_meta( $post_id,'wpcf-org_mission_last_updated', $date_created );
+            update_post_meta( $post_id,'wpcf-org_details_last_updated', $date_created );
+            update_post_meta( $post_id,'wpcf-org_network_contributor', $contributor );
+            update_post_meta( $post_id,'wpcf-org_staff_last_contributor', $contributor );
+            update_post_meta( $post_id,'wpcf-org_mission_last_contributor', $contributor );
+            update_post_meta( $post_id,'wpcf-org_details_last_contributor', $contributor );
+
+
+            get_lat_long_from_address($post_id);
 
           }
             

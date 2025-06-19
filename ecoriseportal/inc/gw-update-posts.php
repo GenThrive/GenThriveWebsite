@@ -238,21 +238,21 @@ new GW_Update_Posts( array(
 	)
 ) );
 
-new GW_Update_Posts( array(
-	'form_id' => 25,
-	'post_id' => get_the_ID(),
-	'meta'    => array(
-	'wpcf-org_network_created' => 70,
-    'wpcf-org_staff_created' => 70,
-    'wpcf-org_mission_created' => 70,
-	'wpcf-org_details_created' => 70,
-	'wpcf-org_network_updated' => 71,
-	'wpcf-org_staff_last_updated' => 71,
-	'wpcf-org_mission_last_updated' => 71,
-	'wpcf-org_details_last_updated' => 71,
-	'wpcf-org_network_last_contributor' => 77,
-	'wpcf-org_staff_last_contributor' => 77,
-	'wpcf-org_mission_last_contributor' => 77,
-	'wpcf-org_details_last_contributor' => 77,
-	)
-) );
+// new GW_Update_Posts( array(
+// 	'form_id' => 25,
+// 	'post_id' => get_the_ID(),
+// 	'meta'    => array(
+// 	'wpcf-org_network_created' => 70,
+//     'wpcf-org_staff_created' => 70,
+//     'wpcf-org_mission_created' => 70,
+// 	'wpcf-org_details_created' => 70,
+// 	'wpcf-org_network_updated' => 71,
+// 	'wpcf-org_staff_last_updated' => 71,
+// 	'wpcf-org_mission_last_updated' => 71,
+// 	'wpcf-org_details_last_updated' => 71,
+// 	'wpcf-org_network_last_contributor' => 77,
+// 	'wpcf-org_staff_last_contributor' => 77,
+// 	'wpcf-org_mission_last_contributor' => 77,
+// 	'wpcf-org_details_last_contributor' => 77,
+// 	)
+// ) );
