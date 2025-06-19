@@ -1,27 +1,101 @@
 <?php
-/**
- * GenThrive Custom
- *
- * @package       GRAVITYFLO
- * @author        Benjamin Johnstone
- * @license       gplv2
- * @version       1.0.0
- *
- * @wordpress-plugin
- * Plugin Name:   GenThrive Custom
- * Description:   Custom portal functionality to for user sign-up and maintenance.
- * Version:       1.0.0
- * Text Domain:   genthrive-custom
- * Domain Path:   /languages
- * License:       GPLv2
- * License URI:   https://www.gnu.org/licenses/gpl-2.0.html
- *
- * You should have received a copy of the GNU General Public License
- * along with GenThrive Custom. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
- */
-
-// Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+add_filter( 'gform_replace_merge_tags', 'jr_get_admins_options', 10, 7 );
+function jr_get_admins_options( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
+
+  $post_id = get_queried_object_id();
+  if ( !is_admin() && 'service-provider' == get_post_type() && !is_null($post_id) && !is_archive() ) {
+    $parentProviderID = (types_render_usermeta( 'user-s-partner-org-id', array( 'user_current' => 'true' ) ));
+
+    if ( strpos( $text, '{get_admin_options}' ) !== false ) {
+      $text = str_replace( '{get_admin_options}', $parentProviderID , $text );
+    }
+    return $text;
+
+  } else {
+    return $text;
+  }
+
+  }
+
+add_filter( 'gform_replace_merge_tags', 'jr_get_current_reviewer', 10, 7 );
+function jr_get_current_reviewer( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
+
+  $post_id = get_the_ID();
+  if ( !is_admin() && 'service-provider' == get_post_type() && !is_null($post_id) && !is_archive() ) {
+      if ($post_id && $post_id != 0) {
+          $currentReviewer = types_render_field( 'assigned_partner_approver', array( "id" => $post_id) );
+          $post_rel_parent = toolset_get_related_post( $post_id, "partner-to-program-provider" );
+          $parentAdmins = types_render_field( 'org_details_administrators', array( "id" => $post_rel_parent) );
+      
+          if ( strpos( $text, '{get_current_reviewer}' ) !== false ) {
+            if (!is_null($currentReviewer) && !empty($currentReviewer) ) {
+              $text = str_replace( '{get_current_reviewer}', $currentReviewer , $text );
+            } else {
+              $text = str_replace( '{get_current_reviewer}', $parentAdmins , $text );
+            }
+          }
+          return $text;
+      }
+    
+    }
+    else {
+      return $text;
+    }
+}
+
+add_filter( 'gform_replace_merge_tags', 'jr_get_admins_replace_merge_tags', 10, 7 );
+function jr_get_admins_replace_merge_tags( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
+
+  $post_id = get_queried_object_id();
+  if ( !is_admin() && 'service-provider' == get_post_type() && !is_null($post_id) && !is_archive() ) {
+    $currentReviewer = types_render_field( 'assigned_partner_approver', array( "id" => $post_id) );
+    $post_rel_parent = toolset_get_related_post( $post_id, "partner-to-program-provider" );
+    $parentAdmins = types_render_field( 'org_details_administrators', array( "id" => $post_rel_parent) );
+    if ( strpos( $text, '{get_Partner_admin}' ) !== false ) {
+      if (!is_null($currentReviewer) && !empty($currentReviewer) ) {
+        $text = str_replace( '{get_Partner_admin}', 'user_id|'.$currentReviewer , $text );
+      } else {
+        $text = str_replace( '{get_Partner_admin}', 'user_id|'.$parentAdmins , $text );
+      }
+    }
+    return $text;
+    }
+    elseif ( !is_admin() && 'program' == get_post_type() && !is_null($post_id) && !is_archive()) {
+      $this_p_ID = get_queried_object_id();
+      if ($this_p_ID && $this_p_ID != 0) {
+          $post_id = toolset_get_related_post( $this_p_ID, "service-provider-program" );
+          $currentReviewer = types_render_field( 'assigned_partner_approver', array( "id" => $post_id) );
+          if ($post_id && $post_id != 0) {
+              $post_rel_parent = toolset_get_related_post( $post_id, "partner-to-program-provider" );
+          $parentAdmins = types_render_field( 'org_details_administrators', array( "id" => $post_rel_parent) );
+          if ( strpos( $text, '{get_Partner_admin}' ) !== false ) {
+            if (!is_null($currentReviewer) && !empty($currentReviewer) ) {
+              $text = str_replace( '{get_Partner_admin}', 'user_id|'.$currentReviewer , $text );
+            } else {
+              $text = str_replace( '{get_Partner_admin}', 'user_id|'.$parentAdmins , $text );
+            }
+          }
+          return $text;
+          }
+      }
+      
+      
+      }
+    elseif ( !is_admin() && is_page(544) && !is_archive()) {
+
+        $parentProviderID = (types_render_usermeta( 'user-s-partner-org-id', array( 'user_current' => 'true' ) ));
+
+        if ( strpos( $text, '{get_Partner_admin}' ) !== false ) {
+          $text = str_replace( '{get_Partner_admin}', $parentProviderID , $text );
+        }
+        return $text;
+      }
+    else {
+      return $text;
+    }
+  }
 
 function get_usersrole( $atts ) {
 
@@ -532,9 +606,6 @@ function potential_SP_notificatoin( $entry, $form ) {
               }
           }
       }
-      elseif ( $form_id === 3 ) {
-
-      }
 }
 
 //generate lat/long and save
@@ -614,4 +685,275 @@ function process_service_provider_posts() {
 add_action('process_posts_cron', 'process_service_provider_posts');
 if (!wp_next_scheduled('process_posts_cron')) {
     wp_schedule_event(time(), 'weekly', 'process_posts_cron');
+}
+
+add_action( 'gform_after_submission', 'process_after_SP_forms', 10, 2 );
+function process_after_SP_forms($entry, $form){
+
+        $form_id = $form['id'];
+        $fieldUpdateForms = array( 2,3,4,5,6,25 );
+        
+        if ( in_array( $form_id, $fieldUpdateForms )) {
+
+          if ( $form_id === 2 ) {
+            $post_id = $entry[24];
+            $logo = $entry[35];
+
+            $AddressMeta = array(
+              'wpcf-org_billingstreet' => '18.1',
+              'wpcf-org_billingcity' => '18.3',
+              'wpcf-org_billingstate' => '18.4',
+              'wpcf-org_billingzippostalcode' => '18.5',
+            );
+
+            $physicalAddressMeta = array(
+              'wpcf-org_physical_street_address' => '37.1',
+              'wpcf-org_physical-city-address' => '37.3',
+              'wpcf-org_physical-state-address' => '37.4',
+              'wpcf-org_physical-zip-code-address' => '37.5',
+            );
+
+            if ($logo != "[]") {
+              update_post_meta( $post_id, 'wpcf-organization_logo', $logo );
+            }
+            
+          }
+          elseif ( $form_id === 3 ) {
+            $post_id = $entry[21];
+          }
+          elseif ( $form_id === 4 ) {
+            $post_id = $entry[15];
+
+          }
+          elseif ( $form_id === 5 ) {
+            $post_id = $entry[19];
+          }
+          elseif ( $form_id === 6 ) {
+            $post_id = $entry[69];
+            if ($post_id && $post_id != 0) {
+              update_post_meta( $post_id, 'wpcf-prgm_status', 'complete' );
+
+            $post_id = toolset_get_related_post( $post_id, "service-provider-program" );
+            }
+            
+
+          }
+          elseif ( $form_id === 25 ) {
+            $post_id = $entry[72];
+
+            $AddressMeta = array(
+              'wpcf-org_billingstreet' => '5.1',
+              'wpcf-org_billingcity' => '5.3',
+              'wpcf-org_billingstate' => '5.4',
+              'wpcf-org_billingzippostalcode' => '5.5',
+            );
+
+            $physicalAddressMeta = array(
+              'wpcf-org_physical_street_address' => '79.1',
+              'wpcf-org_physical-city-address' => '79.3',
+              'wpcf-org_physical-state-address' => '79.4',
+              'wpcf-org_physical-zip-code-address' => '79.5',
+            );
+
+            update_post_meta( $post_id,'wpcf-org_network_status', 'complete' );
+            update_post_meta( $post_id,'wpcf-org_staff_status', 'complete' );
+            update_post_meta( $post_id,'wpcf-org_mission_status', 'complete' );
+            update_post_meta( $post_id,'wpcf-org_details_status', 'complete' );
+
+          }
+            
+          $arr = [];
+
+          foreach ( $form['fields'] as $field ) {
+            if ($field->type == "checkbox" && !empty($field->postMetaMatch)) {
+              $inner_array = [];
+              $key = $field->postMetaMatch;
+              $inner_array[] = strval($key);
+              $inner_array[] = strval($field->id);
+              $arr[] = $inner_array;
+            }
+          }
+          $arr_multi = [];
+      
+          foreach ( $form['fields'] as $field ) {
+            if ($field->type == "multiselect" && !empty($field->postMetaMatch)) {
+    
+              $inner_array = [];
+              $key = $field->postMetaMatch;
+              $inner_array[] = strval($key);
+              $inner_array[] = strval($field->id);
+              $arr_multi[] = $inner_array;
+            }
+          }
+          
+          // $arr_multi = [];
+
+          // foreach ( $form['fields'] as $field ) {
+          //   if ($field->type == "multiselect" && !empty($field->postMetaMatch)) {
+          //     $key = 'wpcf-'.$field->postMetaMatch;
+          //     $meta[$key] = $field->id;
+          //   }
+          // }
+
+          // var_dump($arr);
+          $meta = [];
+
+          foreach ( $form['fields'] as $field ) {
+            if ($field->type != "checkbox" && $field->type != "multiselect" && !empty($field->postMetaMatch)) {
+              $key = 'wpcf-'.$field->postMetaMatch;
+              $meta[$key] = $field->id;
+            }
+          }
+
+          if(!empty($AddressMeta)) {
+            $meta = array_merge($AddressMeta,$meta);
+          }
+
+          if(!empty($physicalAddressMeta)) {
+            $meta = array_merge($physicalAddressMeta,$meta);
+          }
+
+          $publishStatus = (types_render_field( 'org_details_account_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $accountOnboardStatus = (types_render_field( 'onboarding_account_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $detailStatus = (types_render_field( 'org_details_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $missionStatus = (types_render_field( 'org_mission_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $staffStatus = (types_render_field( 'org_staff_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $networkStatus = (types_render_field( 'org_network_status', array( 'output' => 'raw', 'item' => $post_id ) ));
+          $statusArr = array($detailStatus,$missionStatus,$staffStatus,$networkStatus);
+
+          $programCount = count(get_view_query_results( 2739,null,null,['wpvrelatedto'=>$post_id] ));
+          $SPName = get_the_title( $post_id );
+          $SPurl = get_permalink( $post_id );
+
+          if ( $publishStatus != '1' && $programCount > 0 && !in_array("under_review", $statusArr) && !in_array("not_started", $statusArr) && !in_array("needs_edits", $statusArr) ) {
+            
+            $to = 'sean@fortafy.us';
+            $subject = $SPName . '\'s Account Now Active (Test Mode, Only Sean@fortafy is getting now)';
+            $body = 'The ' . $SPName . ' profile is now active on Gen:Thrive. <a href="'.$SPurl.'">Visit Live Profile Page</a>';
+            $headers = array('Content-Type: text/html; charset=UTF-8','From: Gen:Thrive Website <no-reply@genthrive.org>');
+
+            wp_mail( $to, $subject, $body, $headers );
+            
+            update_post_meta( $post_id, 'wpcf-onboarding_account_status', '2' );
+            update_post_meta( $post_id, 'wpcf-org_details_account_status', '1' );
+          } elseif ( $accountOnboardStatus != '1') {
+            update_post_meta( $post_id, 'wpcf-onboarding_account_status', '1' );
+          }
+
+          if ( $form_id === 6 ) {
+
+            if ( $publishStatus != '1' ) {
+              update_post_meta( $post_id, 'wpcf-prgm_account_status', '1' );
+            }
+
+          }
+
+        }
+
+        if(!empty($arr)) {
+          foreach($arr as $v){
+              $items = get_checkbox_value( $entry, $v[1] );
+              $value = my_checkboxes_func($items, $v[0]);
+              if ( $form_id === 6 ) {
+                $post_id = $entry[69];
+                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
+              }else{
+                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
+              }
+              
+          }
+        }
+
+        if(!empty($arr_multi)) {
+          foreach($arr_multi as $v){            
+              $items = get_checkbox_value( $entry, $v[1] );
+              $value = my_multiselect_func($items, $v[0]);
+              if ( $form_id === 6 ) {
+                $post_id = $entry[69];
+                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
+              }else{
+                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
+              }
+              
+          }
+        }
+
+        if ( $form_id === 6 ) {
+          $post_id = $entry[69];
+        $post = get_post( $post_id );
+        }else{
+          $post = get_post( $post_id );
+        }
+        // var_dump($meta);
+
+        if(!empty($meta)) {
+          // start update regular terms
+          $meta_input = array();
+
+          // Assign custom fields.
+          foreach ( $meta as $key => $value ) {
+
+            $meta_value = rgar( $entry, $value );
+            // var_dump($meta_value);
+
+              // Map all other custom fields generically.
+              if ( ! rgblank( $meta_value ) ) {
+                $meta_input[ $key ] = $meta_value;
+              } 
+              // else {
+              //   delete_post_meta( $post_id, $key );
+              // }
+          }
+          // var_dump($meta_input);
+          
+          $post->meta_input = $meta_input;
+            
+          wp_update_post( $post );
+    }
+
+
+} // end process
+
+function get_checkbox_value( $entry, $field_id ){
+
+    //getting a comma separated list of selected values
+    $lead_field_keys = array_keys( $entry );
+    $items           = array();
+    foreach ( $lead_field_keys as $input_id ) {
+        if ( is_numeric( $input_id ) && absint( $input_id ) == $field_id ) {
+            $items[] = GFCommon::selection_display( rgar( $entry, $input_id ), null, $entry['currency'], false );
+        }
+    }
+
+    return $items;
+}
+
+function my_checkboxes_func($items = array(), $types_field = '') {
+  $fields = WPCF_Fields::getFields();
+  $arr = array();
+  if(isset($fields[$types_field]['data']['options'])){
+      foreach ($fields[$types_field]['data']['options'] as $k=> $v){
+          if(in_array($v['set_value'], $items)){
+              $arr[$k] = array($v['set_value']);
+          }
+      }
+  }
+  return $arr;
+}
+
+function my_multiselect_func($items = array(), $types_field = ''){
+    $fields = WPCF_Fields::getFields();
+    $arr = array();
+      
+      
+    if(isset($fields[$types_field]['data']['options'])){
+    
+        foreach ($fields[$types_field]['data']['options'] as $k=> $v){
+          if(in_array($v['set_value'], json_decode($items[0]??'[]'))){
+            $arr[$k] = array($v['set_value']);
+          }
+        }
+    }
+
+    return $arr;
 }

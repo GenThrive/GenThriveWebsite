@@ -3,8 +3,7 @@ require_once "standard_nav.php";
 require_once "mobile_locations.php";
 require_once "gw-update-posts.php";
 require_once "hide-field-by-parent-org.php";
-// require_once "gfl-update-posts.php";
-// require_once "forms_code.php";
+require_once "genthrive-custom.php";
 
 define( 'DISALLOW_FILE_EDIT', true );
 
