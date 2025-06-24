@@ -146,16 +146,6 @@ function remove_admin_bar() {
   }
 }
 
-add_action( 'wp_enqueue_scripts', 'gen_scripts' );
-function gen_scripts() {
-    wp_enqueue_script( 'genthrive-custom', plugin_dir_url( __FILE__ ) . 'js/genthrive-custom.js', array(), '1.0.1', true );
-}
-
-add_filter( 'gravityflow_reject_label_workflow_detail', 'filter_reject_label_workflow_detail', 10, 2 );
-function filter_reject_label_workflow_detail( $reject_label, $step ) {
-   return 'Needs Revision';
-}
-
 //redirect user after passord reset
 add_action('login_headerurl', 'wpse_lost_password_redirect');
 function wpse_lost_password_redirect() {
@@ -260,44 +250,55 @@ function gw_users_parent_org() {
   }
 }
 
-add_filter( 'gform_replace_merge_tags', 'djb_gform_replace_merge_tags', 10, 7 );
-function djb_gform_replace_merge_tags( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
-if ( strpos( $text, '{current_date_time}' ) !== false ) {
-	//$text = str_replace( '{current_date_time}', date("Y-m-d H:i:s"), $text );
-	$text = str_replace( '{current_date_time}', strtotime(date("Y-m-d H:i:s")), $text );
-}
-return $text;
-}
+add_filter( 'gform_replace_merge_tags', 'djb_gform_replace_custom_site_url_merge_tag', 10, 7 );
+function djb_gform_replace_custom_site_url_merge_tag( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
 
-add_filter( 'gform_replace_merge_tags', 'get_user_update_form', 10, 7 );
-function get_user_update_form( $text, $form, $entry, $url_encode, $esc_html, $nl2br, $format ) {
-if ( strpos( $text, '{get_user_update_form}' ) !== false ) {
-$text = str_replace( '{get_user_update_form}', do_shortcode( '[wpv-user field="ID"]' ), $text );
-}
-return $text;
-}
+    // Check if our custom merge tag '{site_url}' exists in the text.
+    if ( strpos( $text, '{site_url}' ) !== false ) {
+        // Get the WordPress site URL.
+        $site_url = get_site_url();
 
+        // Replace the merge tag with the actual site URL.
+        $text = str_replace( '{site_url}', $site_url, $text );
+    }
+
+    // You can keep your existing custom merge tag logic here as well.
+    if ( strpos( $text, '{current_date_time}' ) !== false ) {
+        // Using strtotime(date("Y-m-d H:i:s")) to get a Unix timestamp as per your example.
+        $text = str_replace( '{current_date_time}', strtotime( date( "Y-m-d H:i:s" ) ), $text );
+    }
+
+    if ( strpos( $text, '{get_user_update_form}' ) !== false ) {
+        $text = str_replace( '{get_user_update_form}', do_shortcode( '[wpv-user field="ID"]' ), $text );
+    }
+    return $text;
+
+    return $text;
+}
 
 add_filter( 'gform_confirmation', function ( $confirmation, $form, $entry, $ajax ) {
 
-  $forms = array( 25 ); 
+  $forms = array( 25 );
+  $form_id = $form['id']; 
     
-  if ( ! in_array( $form['id'], $forms ) ) {
+  if ( !in_array( $form_id, $forms ) ) {
       return $confirmation;
   }
 
   if ( isset( $confirmation['redirect'] ) ) {
-  // current page url
-  global $wp;
-  $url = esc_url_raw( home_url( add_query_arg( $_GET, $wp->request ) ) );
-  
-  $confirmation = '<div class="gform_confirmation_wrapper"><h3><span style="color: #000000;">Your information has been submitted.</span></h3>
-  This page will now refresh so you can fill in at least one program below to allow your account to be active.</div>';
-  $confirmation .= "<script type=\"text/javascript\">setTimeout(function () { window.location.assign('$url') }, 3500);</script>";
+    // current page url
+    global $wp;
+    $url = esc_url_raw( home_url( add_query_arg( $_GET, $wp->request ) ) );
+    
+    $confirmation = '<div class="gform_confirmation_wrapper"><div class="alert alert-warning"><h3><span style="color: #000000;">Your information has been submitted.</span></h3>
+    This page will now refresh so you can fill in at least one program below to allow your account to be active.</div></div>';
+    $confirmation .= "<script type=\"text/javascript\">setTimeout(function () { window.location.assign('$url') }, 3500);</script>";
+
   }
 
   return $confirmation;
 }, 10, 4 );
+
 
 // add_filter( 'gform_confirmation_28', 'custom_confirmation', 10, 4 );
 // function custom_confirmation( $confirmation, $form, $entry, $ajax ) {
@@ -489,14 +490,7 @@ function ts_add_prgm_relationship( $post_id, $feed, $entry, $form ) {
 
     toolset_connect_posts("service-provider-program", $p_org_field, $post_id);
 
-    $data = array(
-      'ID' => $post_id,
-      'meta_input' => array(
-        'wpcf-prgm_created' => ''
-       )
-     );
-
-    wp_update_post( $data );
+    update_post_meta( $post_id, 'wpcf-prgm_created', time() );
 
 }
 
@@ -715,14 +709,7 @@ function process_after_SP_forms($entry, $form){
             $post_id = $entry[19];
           }
           elseif ( $form_id === 6 ) {
-            $post_id = $entry[69];
-            if ($post_id && $post_id != 0) {
-              update_post_meta( $post_id, 'wpcf-prgm_status', 'complete' );
-
-            $post_id = toolset_get_related_post( $post_id, "service-provider-program" );
-            }
-            
-
+            $post_id = $entry[69];       
           }
           elseif ( $form_id === 25 ) {
             $post_id = $entry[72];
@@ -815,54 +802,13 @@ function process_after_SP_forms($entry, $form){
             $meta = array_merge($physicalAddressMeta,$meta);
           }
 
-          $publishStatus = (types_render_field( 'org_details_account_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $accountOnboardStatus = (types_render_field( 'onboarding_account_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $detailStatus = (types_render_field( 'org_details_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $missionStatus = (types_render_field( 'org_mission_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $staffStatus = (types_render_field( 'org_staff_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $networkStatus = (types_render_field( 'org_network_status', array( 'output' => 'raw', 'item' => $post_id ) ));
-          $statusArr = array($detailStatus,$missionStatus,$staffStatus,$networkStatus);
-
-          $programCount = count(get_view_query_results( 2739,null,null,['wpvrelatedto'=>$post_id] ));
-          $SPName = get_the_title( $post_id );
-          $SPurl = get_permalink( $post_id );
-
-          if ( $publishStatus != '1' && $programCount > 0 && !in_array("under_review", $statusArr) && !in_array("not_started", $statusArr) && !in_array("needs_edits", $statusArr) ) {
-            
-            $to = 'sean@fortafy.us';
-            $subject = $SPName . '\'s Account Now Active (Test Mode, Only Sean@fortafy is getting now)';
-            $body = 'The ' . $SPName . ' profile is now active on Gen:Thrive. <a href="'.$SPurl.'">Visit Live Profile Page</a>';
-            $headers = array('Content-Type: text/html; charset=UTF-8','From: Gen:Thrive Website <no-reply@genthrive.org>');
-
-            wp_mail( $to, $subject, $body, $headers );
-            
-            update_post_meta( $post_id, 'wpcf-onboarding_account_status', '2' );
-            update_post_meta( $post_id, 'wpcf-org_details_account_status', '1' );
-          } elseif ( $accountOnboardStatus != '1') {
-            update_post_meta( $post_id, 'wpcf-onboarding_account_status', '1' );
-          }
-
-          if ( $form_id === 6 ) {
-
-            if ( $publishStatus != '1' ) {
-              update_post_meta( $post_id, 'wpcf-prgm_account_status', '1' );
-            }
-
-          }
-
         }
 
         if(!empty($arr)) {
           foreach($arr as $v){
               $items = get_checkbox_value( $entry, $v[1] );
               $value = my_checkboxes_func($items, $v[0]);
-              if ( $form_id === 6 ) {
-                $post_id = $entry[69];
-                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
-              }else{
-                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
-              }
-              
+              update_post_meta($post_id, 'wpcf-' . $v[0], $value);
           }
         }
 
@@ -870,22 +816,10 @@ function process_after_SP_forms($entry, $form){
           foreach($arr_multi as $v){            
               $items = get_checkbox_value( $entry, $v[1] );
               $value = my_multiselect_func($items, $v[0]);
-              if ( $form_id === 6 ) {
-                $post_id = $entry[69];
-                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
-              }else{
-                update_post_meta($post_id, 'wpcf-' . $v[0], $value);
-              }
-              
+              update_post_meta($post_id, 'wpcf-' . $v[0], $value);
           }
         }
 
-        if ( $form_id === 6 ) {
-          $post_id = $entry[69];
-        $post = get_post( $post_id );
-        }else{
-          $post = get_post( $post_id );
-        }
         // var_dump($meta);
 
         if(!empty($meta)) {
@@ -907,10 +841,40 @@ function process_after_SP_forms($entry, $form){
               // }
           }
           // var_dump($meta_input);
+
+          $post = get_post( $post_id );
           
           $post->meta_input = $meta_input;
             
           wp_update_post( $post );
+    }
+
+    if ( $form_id === 6 ) {
+
+      if ($post_id && $post_id != 0) {
+        $rel_post_id = toolset_get_related_post( $post_id, "service-provider-program" );
+      }
+
+      $publishStatus = (types_render_field( 'org_details_account_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $accountOnboardStatus = (types_render_field( 'onboarding_account_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $detailStatus = (types_render_field( 'org_details_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $missionStatus = (types_render_field( 'org_mission_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $staffStatus = (types_render_field( 'org_staff_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $networkStatus = (types_render_field( 'org_network_status', array( 'output' => 'raw', 'item' => $rel_post_id ) ));
+      $statusArr = array($detailStatus,$missionStatus,$staffStatus,$networkStatus);
+
+      $programCount = count(get_view_query_results( 2739,null,null,['wpvrelatedto'=>$rel_post_id] ));
+
+      if ( $publishStatus != '1' && $programCount > 0 && !in_array("under_review", $statusArr) && !in_array("not_started", $statusArr) && !in_array("needs_edits", $statusArr) ) {        
+        update_post_meta( $rel_post_id, 'wpcf-onboarding_account_status', '2' );
+      } elseif ( $accountOnboardStatus != '1') {
+        update_post_meta( $rel_post_id, 'wpcf-onboarding_account_status', '1' );
+      }
+
+      if ( $publishStatus != '1' ) {
+        update_post_meta( $post_id, 'wpcf-prgm_account_status', '1' );
+      }
+
     }
 
 

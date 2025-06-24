@@ -47,7 +47,7 @@
                                                 </div>
                                                 <?php $parentOrg = toolset_get_related_post($page_ID, 'service-provider-program'); ?>
                                                 <div class="SPsubTitle mb-half">
-                                                    <?php _e('by', 'tb_theme'); ?> <a href="<?php echo get_post_field( 'post_name',($parentOrg)); ?>"><?php echo esc_html(get_the_title($parentOrg)); ?></a>
+                                                    <?php _e('by', 'tb_theme'); ?> <a href="<?php echo get_post_permalink($parentOrg); ?>"><?php echo esc_html(get_the_title($parentOrg)); ?></a>
                                                 </div>
                                                 <div class="serviceProSocial__wrapper">
                                                     <?php if ($website) { ?>
@@ -81,11 +81,6 @@
                                                 </div>
                                             <?php else : ?>
                                                 <div>
-                                                    <?php if ((types_render_field('prgm_status', array('output' => 'raw'))) == 'under_review') : ?>
-                                                        <div class="alert alert-secondary">
-                                                            <b><?php _e('Your newly submitted program details update is under review. After your service provider approves your updated details will show here.', 'tb_theme'); ?></b>
-                                                        </div>
-                                                    <?php endif; ?>
                                                     <div class="program__summary"><?php echo (types_render_field('prgm_description', array())); ?></div>
                                                     <?php $termOther = (types_render_field('prgm_themes_other', array('output' => 'raw'))); ?>
                                                     <?php $serviceOther = (types_render_field('prgm_services_other', array('output' => 'raw'))); ?>
@@ -103,16 +98,6 @@
 																			<?php if ($serviceOther  != "") : ?>
                                                                             <strong>: </strong><strong><?php echo $serviceOther ?></strong>
                                                                         	<?php endif; ?>
-                                                                        </li>
-                                                                    </ul>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th scope="row"><img src="/wp-content/uploads/2022/10/icon-2.svg" alt="Audiences" width="50px" height="50px" /><?php _e('Audiences', 'tb_theme'); ?></th>
-                                                                <td>
-                                                                    <ul class="dotlessUL">
-                                                                        <li>
-                                                                            <?php echo (types_render_field('prgm_audiences', array('separator' => ', '))); ?>
                                                                         </li>
                                                                     </ul>
                                                                 </td>

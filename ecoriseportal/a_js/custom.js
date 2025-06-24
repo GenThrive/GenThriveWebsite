@@ -7,6 +7,7 @@ jQuery(document).ready(function () {}); //end jQuery onLoad
   let selectedTab = urlParams.get('tab');
   if (urlParams.has('tab')) {
     jQuery('.nav-link[href="'+'#'+selectedTab+'"]' ).trigger('click');
+    console.log(selectedTab);
   }
 
   jQuery(".search_provider").each(function() {

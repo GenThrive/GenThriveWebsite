@@ -243,7 +243,8 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Modal for Deleting User-->
+                    <?php endif; ?>
+                    <!-- Modal for Deleting User-->
                         <div class="modal fade formModal" id="deleteUser" tabindex="-1" aria-labelledby="deleteUserLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content rounded-0">
@@ -275,7 +276,6 @@
                             </div>
                         </div>
                         </div>
-                    <?php endif; ?>
                 </div>
             </div>
         </div>
