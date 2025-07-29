@@ -635,13 +635,21 @@ function process_service_provider_posts() {
       'meta_query' => array(
         'relation' => 'AND',
           array(
-              'key' => 'wpcf-address_latitude',
-              'compare' => 'NOT EXISTS',
-          ),
+              'relation' => 'OR',
+              array(
+                'key' => 'wpcf-address_latitude',
+                'compare' => 'NOT EXISTS',
+              ),
+              array(
+                'key' => 'wpcf-address_latitude',
+                'value' => '',
+                'compare' => '=',
+              ),
+            ),
           array(
-              'key' => 'wpcf-org_billingstreet',
-              'compare' => '!=',
-              'value' => '',
+            'key' => 'wpcf-org_billingstreet',
+            'compare' => '!=',
+            'value' => '',
           ),
       )
   );
